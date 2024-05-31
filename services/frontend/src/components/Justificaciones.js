@@ -60,6 +60,8 @@ function Justificaciones() {
     };
 
     const generarJustificacion = () => {
+        // Log de nivel DEBUG
+        console.debug('Generando justificación...');
         // Aquí puedes realizar cualquier acción con las fechas seleccionadas,
         // razones de ausencia y archivos adjuntos, así como las asignaturas seleccionadas.
         console.log('Fecha Desde:', fechaDesde);
@@ -67,7 +69,14 @@ function Justificaciones() {
         console.log('Razones:', razones);
         console.log('Archivos:', archivos);
         console.log('Asignaturas Seleccionadas:', asignaturasSeleccionadas);
+
+        // Log de nivel INFO
+        console.info('Justificación generada con éxito.');
+
+        // Log de nivel ERROR (simulado para demostración)
+        console.error('Ha ocurrido un error al generar la justificación.');
     };
+
 
     return (
         <div
