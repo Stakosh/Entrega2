@@ -4,17 +4,32 @@ from models import db
 from config import app
 from flask import request, jsonify
 from models import UniversityCredential
+import logging
 #hashed_password = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
+# Configurar el nivel de logging
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s %(levelname)s %(message)s',
+                    handlers=[
+                        logging.FileHandler("app.log"),
+                        logging.StreamHandler()
+                    ])
 
+logger = logging.getLogger(__name__)
 
 
 #para probar, no funciona, cors o algo mas, por investigar
 @app.route("/", methods=["GET"])
 def login():
-    alumnos = UniversityCredential.query.all()
-    json_alumnos = list(map(lambda x: x.to_json(), alumnos))
-    return jsonify({"alumnos": json_alumnos}), 200
+    logger.debug("Iniciando endpoint de login")  # Log de nivel DEBUG
+    try:
+        alumnos = UniversityCredential.query.all()
+        logger.info("Se obtuvieron con éxito, todos los estudiantes de la base de datos.")  # Log de nivel INFO
+        json_alumnos = list(map(lambda x: x.to_json(), alumnos))
+        return jsonify({"alumnos": json_alumnos}), 200
+    except Exception as e:
+        logger.error("Error al recuperar estudiantes de la base de datos", exc_info=True)  # Log de nivel ERROR
+        return jsonify({"error": "Internal Server Error"}), 500
 
 
 
@@ -85,3 +100,7 @@ with app.app_context():
     time.sleep(5)
     db.create_all()
     app.run(debug=True)
+
+
+if __name__ == '__main__':
+    app.run(debug=True, port=5000)
