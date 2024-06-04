@@ -58,10 +58,10 @@ function Justificaciones() {
         const nuevasAsignaturas = asignaturasSeleccionadas.filter((asig) => asig.id !== asignatura.id);
         setAsignaturasSeleccionadas(nuevasAsignaturas);
     };
-
     const generarJustificacion = () => {
         // Log de nivel DEBUG
         console.debug('Generando justificación...');
+        
         // Aquí puedes realizar cualquier acción con las fechas seleccionadas,
         // razones de ausencia y archivos adjuntos, así como las asignaturas seleccionadas.
         console.log('Fecha Desde:', fechaDesde);
@@ -77,7 +77,7 @@ function Justificaciones() {
         console.error('Ha ocurrido un error al generar la justificación.');
     };
 
-    
+
     return (
         <div
             style={{
