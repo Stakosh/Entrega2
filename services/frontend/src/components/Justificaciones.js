@@ -77,6 +77,7 @@ function Justificaciones() {
         console.error('Ha ocurrido un error al generar la justificación.');
     };
 
+    
     return (
         <div
             style={{
