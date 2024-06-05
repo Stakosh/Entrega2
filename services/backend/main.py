@@ -7,6 +7,7 @@ from models import UniversityCredential
 import logging
 #hashed_password = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
+# prueba
 # Configurar el nivel de logging
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(message)s',
