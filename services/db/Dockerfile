@@ -1,4 +1,5 @@
-FROM postgres:11-alpine
+# versión más reciente de PostgreSQL
+FROM postgres:16.3-alpine
 
-# run create.sql on init
-ADD create.sql /docker-entrypoint-initdb.d
+# Añadir el script SQL de inicialización
+ADD create.sql /docker-entrypoint-initdb.d/

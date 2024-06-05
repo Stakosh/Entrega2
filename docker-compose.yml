@@ -1,21 +1,19 @@
-version: "3.9"
+
 
 services:
   backend:
     build:
       context: ./services/backend
       dockerfile: Dockerfile
+    entrypoint: ["sh", "/app/entrypoint.sh"] # se asegura de ejecutar el .sh que verifica que se ejecute la base de datos 
     volumes:
-      - "./services/backend:/usr/src/chat-app"
+      - "./services/backend:/app"
     ports:
-      - 5000:5000
+      - "5000:5000"
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/app_dev
       - FLASK_ENV=development
-      - DB_USER=postgres
-      - DB_PASS=postgres
-      - DB_HOST=db
-      - DB_NAME=postgres
+      - APP_SETTINGS=app.config.DevelopmentConfig
       - SECRET_KEY=secret
     depends_on:
       - db
@@ -25,23 +23,20 @@ services:
       context: ./services/db
       dockerfile: Dockerfile
     ports:
-      - 5432:5432
+      - "5432:5432"
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=postgres
-  
-
 
   frontend:
     build:
       context: ./services/frontend
       dockerfile: Dockerfile
     ports:
-      - 3000:3000
+      - "3000:3000"
     environment:
-      - CHOKIDAR_USEPOLLING= true
-      - NODE_ENV= development
+      - CHOKIDAR_USEPOLLING=true
+      - NODE_ENV=development
       - REACT_APP_BACKEND_SERVICE_URL=http://localhost:5000
     volumes:
       - "./services/frontend:/usr/src/chat-app"
