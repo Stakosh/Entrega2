@@ -11,14 +11,6 @@ from extensions import db
 from models import CREDENCIAL
 
 import bcrypt
-<<<<<<< HEAD
-from models import db
-from config import app
-from flask import request, jsonify
-from models import UniversityCredential
-import logging
-#hashed_password = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-=======
 import jwt
 import os
 import time
@@ -41,34 +33,10 @@ CORS(app, resources={r"/api/*": {
 
 # Configuración de la API
 api = Api(app, version="1.0", title="APIs", doc="/docs/")
->>>>>>> javi-backend
-
-# prueba
-# Configurar el nivel de logging
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s %(levelname)s %(message)s',
-                    handlers=[
-                        logging.FileHandler("app.log"),
-                        logging.StreamHandler()
-                    ])
-
-logger = logging.getLogger(__name__)
 
 
-<<<<<<< HEAD
-#para probar, no funciona, cors o algo mas, por investigar
-@app.route("/", methods=["GET"])
-def login():
-    logger.debug("Iniciando endpoint de login")  # Log de nivel DEBUG
-    try:
-        alumnos = UniversityCredential.query.all()
-        logger.info("Se obtuvieron con éxito, todos los estudiantes de la base de datos.")  # Log de nivel INFO
-        json_alumnos = list(map(lambda x: x.to_json(), alumnos))
-        return jsonify({"alumnos": json_alumnos}), 200
-    except Exception as e:
-        logger.error("Error al recuperar estudiantes de la base de datos", exc_info=True)  # Log de nivel ERROR
-        return jsonify({"error": "Internal Server Error"}), 500
-=======
+
+
 
 # Namespace para operaciones relacionadas con alumnos
 student_ns = Namespace('students', description='Operaciones relacionadas con alumnos')
@@ -82,7 +50,6 @@ student_model = student_ns.model('Student', {
     'password': fields.String(required=True, description='Contraseña del estudiante'),
     'tipo_acceso': fields.String(required=True, description='Tipo de acceso (admin, profesor, alumno)'),
 })
->>>>>>> javi-backend
 
 
 
@@ -280,13 +247,6 @@ CORS(app)
 time.sleep(10)
 with app.app_context():
     db.create_all()
-<<<<<<< HEAD
-    app.run(debug=True)
-
-
-if __name__ == '__main__':
-    app.run(debug=True, port=5000)
-=======
 
 if __name__ == "__main__":
     with app.app_context():
@@ -294,4 +254,3 @@ if __name__ == "__main__":
         db.create_all()
         initialize_default_users() #crea a los 3 usuarios por default 
         app.run(debug=True, host='0.0.0.0')
->>>>>>> javi-backend
