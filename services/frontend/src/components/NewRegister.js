@@ -1,5 +1,3 @@
-// /new
-
 import React, { useState } from 'react';
 import { Container, Button, Row, Col, Form, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
@@ -12,7 +10,8 @@ function NewRegister() {
         last_name: '',
         email: '',
         password: '',
-        confirmPassword: ''
+        confirmPassword: '',
+        tipo_acceso: 'alumno'  // Default value for tipo_acceso
     });
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false); // To handle success state
@@ -30,7 +29,7 @@ function NewRegister() {
         }
 
         try {
-            const response = await fetch('http://localhost:5000/new', {
+            const response = await fetch('http://localhost:5000/api/creacion-nuevo-alumno', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -40,7 +39,8 @@ function NewRegister() {
                     first_name: formData.first_name,
                     last_name: formData.last_name,
                     email: formData.email,
-                    password: formData.password
+                    password: formData.password,
+                    tipo_acceso: formData.tipo_acceso
                 })
             });
 
@@ -61,7 +61,7 @@ function NewRegister() {
     return (
         <Container>
             <Row>
-            <Col md={6} className="offset-md-3">
+                <Col md={6} className="offset-md-3">
                     <div className="p-4 rounded shadow-lg bg-white mt-5">
                         <h2 className="text-center mb-4">Register</h2>
                         {error && <Alert variant="danger">{error}</Alert>}
@@ -143,6 +143,22 @@ function NewRegister() {
                                     onChange={handleChange}
                                     required
                                 />
+                            </Form.Group>
+
+                            {/* Access Type */}
+                            <Form.Group controlId="formBasicAccessType" className="mb-3">
+                                <Form.Label>Access Type</Form.Label>
+                                <Form.Control
+                                    as="select"
+                                    name="tipo_acceso"
+                                    value={formData.tipo_acceso}
+                                    onChange={handleChange}
+                                    required
+                                >
+                                    <option value="admin">admin</option>
+                                    <option value="profesor">profesor</option>
+                                    <option value="alumno">alumno</option>
+                                </Form.Control>
                             </Form.Group>
 
                             <Button variant="primary" type="submit" className="w-100">

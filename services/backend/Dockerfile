@@ -1,26 +1,30 @@
-# Use the official Python image as the base image
-FROM python:3.9-alpine
 
-RUN apk add --no-cache gcc g++ musl-dev python3-dev
+# Use the official Python image as the base image
+FROM python:3.9-slim-buster
+
+
 
 # Set the working directory in the container
 WORKDIR /app
 
+
 # Copy the requirements file into the container
 COPY requirements.txt .
 
-# Install the dependencies
+# install system dependencies
+RUN apt-get update \
+    && apt-get -y install gcc g++ python3-dev netcat postgresql-client \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-cache-dir -r requirements.txt
+# add and install requirements
+COPY ./requirements.txt .
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
 
-# Copy the application files into the container
+# add entrypoint.sh
+COPY ./entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
+# add app
 COPY . .
-
-# Set environment variables
-ENV FLASK_APP=main.py
-
-# Expose the port the app runs on (e.g., 5000)
-EXPOSE 5000
-
-# Set the command to run the Flask application
-ENTRYPOINT ["flask", "run", "--host=0.0.0.0", "--port=5000"]

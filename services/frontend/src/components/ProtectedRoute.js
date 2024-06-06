@@ -2,11 +2,10 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 
-const ProtectedRoute = ({ children }) => {
+function ProtectedRoute({ element: Component }) {
     const { isAuthenticated } = useAuth();
-    if (!isAuthenticated) {
-        return <Navigate to="/" replace />;
-    }
-    return children;
-};
+
+    return isAuthenticated ? <Component /> : <Navigate to="/" replace />;
+}
+
 export default ProtectedRoute;
