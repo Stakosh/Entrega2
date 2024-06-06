@@ -1,0 +1,5 @@
+__pycache__
+env
+secrets.sh
+.env
+.DS_Store
