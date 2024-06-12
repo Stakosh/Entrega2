@@ -1,7 +1,6 @@
 from sqlalchemy.types import Enum
 from extensions import db
 
-
 class CREDENCIAL(db.Model):
     __tablename__ = 'CREDENCIAL'
     id = db.Column(db.Integer, primary_key=True)
@@ -22,8 +21,6 @@ class CREDENCIAL(db.Model):
             "password": self.password,
             "tipo_acceso": self.tipo_acceso
         }
-
-
 
 class CursoCarrera(db.Model):
     __tablename__ = 'CursoCarrera'

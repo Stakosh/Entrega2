@@ -2,26 +2,27 @@ from datetime import datetime, timedelta
 from flask_restx import Api, Resource, Namespace, fields
 from flask import request, jsonify, Flask
 from app2.config import DevelopmentConfig
-
 from flask.cli import FlaskGroup
 from flask_cors import CORS
-
-
 from extensions import db
-from models import CREDENCIAL,Course,Enrollment
-
+from models import CREDENCIAL, Course, Enrollment
 import bcrypt
 import jwt
 import os
 import time
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 app.config.from_object(DevelopmentConfig)
 
-# Inicializa la extensión de base de datos
+# Initialize the database extension
 db.init_app(app)
 
-# Configuración de CORS
+# Configure CORS
 CORS(app, resources={r"/api/*": {
     "origins": ["http://localhost:3000"],
     "methods": ["GET", "POST", "PATCH", "DELETE"],
@@ -30,14 +31,13 @@ CORS(app, resources={r"/api/*": {
     "max_age": 3600
 }})
 
-
-# Configuración de la API
+# Configure the API
 api = Api(app, version="1.0", title="APIs", doc="/docs/")
 
-# Namespace para operaciones relacionadas con alumnos
+# Namespace for student operations
 student_ns = Namespace('students', description='Operaciones relacionadas con alumnos')
 
-# Modelo para creación y actualización de alumnos
+# Model for creating and updating students
 student_model = student_ns.model('Student', {
     'rut': fields.String(required=True, description='RUT del estudiante'),  # Cambiado a rut
     'first_name': fields.String(required=True, description='Nombre del estudiante'),
@@ -47,7 +47,7 @@ student_model = student_ns.model('Student', {
     'tipo_acceso': fields.String(required=True, description='Tipo de acceso (admin, profesor, alumno)'),
 })
 
-# Generación y verificación de tokens JWT
+# JWT token generation and verification
 def generate_token(user_id):
     payload = {
         'exp': datetime.utcnow() + timedelta(days=1),
@@ -378,7 +378,7 @@ api.add_namespace(attendance_ns, path='/api')
 
 
 
-# Creación de usuarios para testing
+# Creation of default users for testing
 def initialize_default_users():
     if not CREDENCIAL.query.first():
         users = [
@@ -420,6 +420,7 @@ def initialize_default_users():
             )
             db.session.add(user)
         db.session.commit()
+        logger.info("Default users initialized")
 
 # Setup CORS
 CORS(app)
@@ -427,11 +428,15 @@ CORS(app)
 # Create the database and tables if they don't exist
 time.sleep(10)
 with app.app_context():
+    logger.info("Creating database tables")
     db.create_all()
+    logger.info("Database tables created")
 
 if __name__ == "__main__":
     with app.app_context():
-        time.sleep(12)  # Asegúrate de que la base de datos esté lista
+        logger.info("Starting the application")
+        time.sleep(18)  # Ensure the database is ready
         db.create_all()
-        initialize_default_users() #crea a los 3 usuarios por default 
+        logger.info("Database tables ensured")
+        initialize_default_users()  # Create the 3 default users
         app.run(debug=True, host='0.0.0.0')

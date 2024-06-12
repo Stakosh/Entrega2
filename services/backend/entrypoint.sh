@@ -52,18 +52,3 @@ echo "Script de inicio completado"
 echo ":)"
 echo "---------------"
 echo " MAY THE FORCE BE WITH YOU"
-
-#!/bin/bash
-set -e
-
-# Esperar a que PostgreSQL esté listo
-until pg_isready -h $DB_HOST -p $DB_PORT -U $DB_USER; do
-  >&2 echo "Postgres no está disponible - esperando"
-  sleep 1
-done
-
-# Crear la base de datos y las tablas
-psql -h $DB_HOST -p $DB_PORT -U $DB_USER -f /db/create.sql
-
-# Ejecutar el comando principal
-exec "$@"
