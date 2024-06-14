@@ -1,0 +1,94 @@
+id,id_curso,nombre,carrera,semestre,profesor
+1,CORE101,CORE: CIVILIZACIÓN CONTEMPORÁNEA I,plan común,1,Prof. Alejandro García
+2,CORE103,CORE: ESCRITURA ARGUMENTATIVA,plan común,1,Prof. María Torres
+3,MAT105,CÁLCULO DIFERENCIAL,plan común,1,Prof. Juan Pérez
+4,MAT109,ÁLGEBRA,plan común,1,Prof. Laura Martínez
+5,TICS100,PROGRAMACIÓN,plan común,1,Prof. Sergio Ramírez
+6,GYM101,EDUCACIÓN FÍSICA I,plan común,1,Prof. Claudia Rojas
+7,FIS100,FUNDAMENTOS DE FÍSICA,ing civil en energías,1,Prof. Eduardo Gutiérrez
+8,QUIM100,INTRODUCCIÓN A LA QUÍMICA,ing civil en energías,1,Prof. Silvia López
+9,CORE102,CORE: CIVILIZACIÓN CONTEMPORÁNEA II,plan común,2,Prof. Alejandro García
+10,MAT106,CÁLCULO INTEGRAL,plan común,2,Prof. Juan Pérez
+11,MAT113,ÁLGEBRA LINEAL,plan común,2,Prof. Laura Martínez
+12,FIS101,FÍSICA I,ing civil en energías,2,Prof. Ricardo Fernández
+13,TEI101,TALLER DE INTRODUCCIÓN A LA INGENIERÍA,plan común,2,Prof. Carmen González
+14,GYM102,EDUCACIÓN FÍSICA II,plan común,2,Prof. Claudia Rojas
+15,MEC100,MECÁNICA BÁSICA,ing civil en energías,2,Prof. Andrés Martínez
+16,MAT115,MATEMÁTICAS AVANZADAS,ing civil en energías,2,Prof. Pedro Sánchez
+17,CORE201,CORE: LITERATURA Y HUMANIDADES I,plan común,3,Prof. Patricia Soto
+18,MAT203,CÁLCULO MULTIVARIABLE,plan común,3,Prof. Juan Pérez
+19,EST211,PROBABILIDAD Y ESTADÍSTICA,ing civil industrial,3,Prof. Eduardo Morales
+20,FIS201,FÍSICA II,ing civil en energías,3,Prof. Ricardo Fernández
+21,LING111,TALLER DE EXPRESIÓN ORAL I,plan común,3,Prof. Ana Navarro
+22,GYM103,EDUCACIÓN FÍSICA III,plan común,3,Prof. Claudia Rojas
+23,ING116,FUNDAMENTOS DE CIENCIAS AMBIENTALES,ing civil informatica,3,Prof. Mario Castillo
+24,FIS102,FÍSICA APLICADA,ing civil en energías,3,Prof. Ricardo Gómez
+25,ELEC200,CIRCUITOS ELÉCTRICOS,ing civil en energías,3,Prof. Gabriel Torres
+26,DAT200,ANÁLISIS DE DATOS,ing civil informatica,3,Prof. Isabel Ramírez
+27,SEG200,SEGURIDAD INFORMÁTICA,ing civil informatica,3,Prof. Javier López
+28,PROJ201,GESTIÓN DE PROYECTOS,ing civil industrial,3,Prof. Ana Muñoz
+29,OPS200,OPERACIONES INDUSTRIALES,ing civil industrial,3,Prof. Roberto Sánchez
+30,CORE202,CORE: LITERATURA Y HUMANIDADES II,plan común,4,Prof. Patricia Soto
+31,MAT208,ECUACIONES DIFERENCIALES,plan común,4,Prof. Juan Pérez
+32,FIS301,FÍSICA III,ing civil en energías,4,Prof. Ricardo Fernández
+33,TEI201,TALLER DE DISEÑO EN INGENIERÍA,plan común,4,Prof. Carmen González
+34,GYM104,EDUCACIÓN FÍSICA IV,plan común,4,Prof. Claudia Rojas
+35,PPO101,PRÁCTICA PROFESIONAL OPERARIO,plan común,4,Prof. Manuel Díaz
+36,TICS314,FUNDAMENTOS DE CIENCIAS DE DATOS,plan común,4,Prof. Sergio Ramírez
+37,ENER300,ENERGÍAS RENOVABLES,ing civil en energías,4,Prof. Marisol Vega
+38,MAT210,MÉTODOS MATEMÁTICOS,ing civil en energías,4,Prof. Luis Ramírez
+39,CORE302,CORE: CIENCIAS,plan común,5,Prof. Beatriz Salazar
+40,ACCT240,CONTABILIDAD Y CONTROL DE GESTIÓN,ing civil industrial,5,Prof. José Valenzuela
+41,ING200,OPTIMIZACIÓN,ing civil industrial,5,Prof. David Rojas
+42,IND428,ORGANIZACIONES Y PERSONAS,ing civil en energías,5,Prof. Lucia Ramírez
+43,MINOR1,MINOR I,ing civil industrial,5,Prof. Elena Gómez
+44,ING105,PROCESOS INDUSTRIALES,ing civil informatica,5,Prof. Mario Castillo
+45,QUIM200,QUÍMICA INDUSTRIAL,ing civil en energías,5,Prof. Natalia Pardo
+46,MAT110,CÁLCULO NUMÉRICO,ing civil en energías,5,Prof. Javier Martínez
+47,ING201,INVESTIGACIÓN DE OPERACIONES,ing civil industrial,6,Prof. David Rojas
+48,IND424,FINANZAS,ing civil en energías,6,Prof. José Valenzuela
+49,TEI301,TALLER DE INNOVACIÓN Y EMPRENDIMIENTO TECNOLÓGICO,plan común,6,Prof. Carmen González
+50,ECO111,MICROECONOMÍA,ing civil industrial,6,Prof. Laura Ortega
+51,MINOR2,MINOR II,ing civil industrial,6,Prof. Elena Gómez
+52,CORE301,CORE: ÉTICA,plan común,6,Prof. Beatriz Salazar
+53,THER200,TERMODINÁMICA,ing civil en energías,6,Prof. Victor Hugo
+54,ECO120,ECONOMÍA ENERGÉTICA,ing civil en energías,6,Prof. Diego Silva
+55,ECO216,FORMULACIÓN Y EVALUACIÓN DE PROYECTOS,ing civil industrial,7,Prof. Laura Ortega
+56,ING480,DISEÑO DE PROCESOS Y SERVICIOS,ing civil en energías,7,Prof. Mario Castillo
+57,MINOR3,MINOR III,ing civil industrial,7,Prof. Elena Gómez
+58,ECO131,MACROECONOMÍA,ing civil informatica,7,Prof. Laura Ortega
+59,LING112,TALLER DE EXPRESIÓN ORAL II,plan común,7,Prof. Ana Navarro
+60,CORE304,CORE: ARTE Y HUMANIDADES,plan común,7,Prof. Patricia Soto
+61,CONTROL300,SISTEMAS DE CONTROL,ing civil en energías,7,Prof. Carlos Lazo
+62,OP300,OPERACIONES ENERGÉTICAS,ing civil en energías,7,Prof. Javier Gómez
+63,AI300,INTELIGENCIA ARTIFICIAL,ing civil informatica,7,Prof. Victoria Torres
+64,BD300,BASES DE DATOS,ing civil informatica,7,Prof. Jorge Díaz
+65,INN300,INNOVACIÓN TECNOLÓGICA,ing civil industrial,7,Prof. Teresa Valenzuela
+66,IND423,ORGANIZACIÓN INDUSTRIAL,ing civil industrial,8,Prof. Lucia Ramírez
+67,MINOR4,MINOR IV,ing civil industrial,8,Prof. Elena Gómez
+68,TEI401,CAPSTONE PROJECT,ing civil informatica,8,Prof. Carmen González
+69,ING421,GESTIÓN DE OPERACIONES,ing civil industrial,8,Prof. David Rojas
+70,TICS304,SISTEMAS DE INFORMACIÓN,ing civil en energías,8,Prof. Sergio Ramírez
+71,LID100,LIDERAZGO,plan común,8,Prof. Manuel Díaz
+72,ARCH300,ARQUITECTURA,ing civil informatica,8,Prof. Carlos Rodríguez
+73,CLOUD300,CLOUD,ing civil informatica,8,Prof. Natalia Vargas
+74,SW300,INGENIERÍA DE SOFTWARE,ing civil informatica,8,Prof. Alberto Muñoz
+75,DS400,CIENCIA DE DATOS,ing civil informatica,8,Prof. Alejandro Martínez
+76,SO400,SISTEMAS OPERATIVOS,ing civil informatica,8,Prof. Patricia Soto
+77,MANEJO300,MANEJO DE RESIDUOS,ing civil en energías,8,Prof. Valentina Silva
+78,ING300,INGENIERÍA AMBIENTAL,ing civil en energías,8,Prof. Paula Soto
+79,TI300,ESTRATEGIA TI,ing civil informatica,9,Prof. Roberto Sandoval
+80,PLAN300,PLANIFICACIÓN ENERGÉTICA,ing civil en energías,9,Prof. Diego Álvarez
+81,GEO300,GEOTERMIA,ing civil en energías,9,Prof. Francisco Mena
+82,PROJ300,PROYECTOS ENERGÉTICOS,ing civil en energías,9,Prof. Sonia Rojas
+83,INT400,INTERNET DE LAS COSAS,ing civil informatica,9,Prof. Ricardo Espinoza
+84,BLOCK400,BLOCKCHAIN,ing civil informatica,9,Prof. Juan Carlos Pérez
+85,PROG401,PROGRAMACIÓN AVANZADA,ing civil informatica,10,Prof. Eduardo Torres
+86,DATA401,ANÁLISIS DE DATOS AVANZADO,ing civil informatica,10,Prof. Victoria Castillo
+87,SEC401,SEGURIDAD DE REDES,ing civil informatica,10,Prof. Andrea Gutiérrez
+88,IND401,GESTIÓN DE PROYECTOS INDUSTRIALES,ing civil industrial,10,Prof. Roberto Sánchez
+89,OPR401,OPTIMIZACIÓN AVANZADA,ing civil industrial,10,Prof. María Valenzuela
+90,FIN401,FINANZAS CORPORATIVAS,ing civil industrial,10,Prof. Luis Martínez
+91,ENER401,ENERGÍA SOLAR,ing civil en energías,10,Prof. Laura Pérez
+92,ENER402,GESTIÓN DE ENERGÍA,ing civil en energías,10,Prof. Felipe Torres
+93,SUST401,SUSTENTABILIDAD ENERGÉTICA,ing civil en energías,10,Prof. Ana López

@@ -11,20 +11,17 @@ function Justificaciones() {
     const [asignaturas, setAsignaturas] = useState([]);
     const [asignaturasSeleccionadas, setAsignaturasSeleccionadas] = useState([]);
 
-    // Simulando obtener las asignaturas del estudiante desde el backend
     useEffect(() => {
-        // Aquí debes hacer la solicitud HTTP para obtener las asignaturas del estudiante
-        // Supongamos que obtienes las asignaturas como un array de objetos:
+        // Simulating fetching subjects from backend
         const asignaturasFromBackend = [
             { id: 1, nombre: 'TICS311: ESTRUCTURAS DE DATOS Y ALGORITMOS' },
             { id: 2, nombre: 'TICS411: MINERÍA DE DATOS' },
             { id: 3, nombre: 'TICS420: PROGRAMACIÓN PROFESIONAL' },
             { id: 4, nombre: 'ING421: GESTIÓN DE OPERACIONES' },
             { id: 5, nombre: 'IND423: ORGANIZACIÓN INDUSTRIAL' },
-            // ... otras asignaturas
         ];
         setAsignaturas(asignaturasFromBackend);
-    }, []); // Vacío para que se ejecute solo una vez al cargar el componente
+    }, []);
 
     const handleFechaDesdeChange = (e) => {
         setFechaDesde(e.target.value);
@@ -39,12 +36,11 @@ function Justificaciones() {
     };
 
     const handleArchivoChange = (e) => {
-        const files = e.target.files;
+        const files = Array.from(e.target.files);
         setArchivos(files);
     };
 
     const handleAsignaturaSeleccionada = (asignatura) => {
-        // Comprobamos si la asignatura ya está seleccionada
         if (!asignaturasSeleccionadas.some((asig) => asig.id === asignatura.id)) {
             setAsignaturasSeleccionadas([...asignaturasSeleccionadas, asignatura]);
         }
@@ -60,13 +56,28 @@ function Justificaciones() {
     };
 
     const generarJustificacion = () => {
-        // Aquí puedes realizar cualquier acción con las fechas seleccionadas,
-        // razones de ausencia y archivos adjuntos, así como las asignaturas seleccionadas.
-        console.log('Fecha Desde:', fechaDesde);
-        console.log('Fecha Hasta:', fechaHasta);
-        console.log('Razones:', razones);
-        console.log('Archivos:', archivos);
-        console.log('Asignaturas Seleccionadas:', asignaturasSeleccionadas);
+        const formData = new FormData();
+        formData.append('fechaDesde', fechaDesde);
+        formData.append('fechaHasta', fechaHasta);
+        formData.append('razones', razones);
+        archivos.forEach((archivo, index) => {
+            formData.append(`archivo${index}`, archivo);
+        });
+        asignaturasSeleccionadas.forEach((asignatura, index) => {
+            formData.append(`asignatura${index}`, asignatura.id);
+        });
+
+        fetch('/api/justificaciones', {
+            method: 'POST',
+            body: formData,
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
     };
 
     return (
@@ -83,8 +94,7 @@ function Justificaciones() {
             }}
         >
             <Container>
-                {/* Paso 1: Rango de fechas a justificar */}
-            <Row style={{  marginTop: '100px'}}> 
+                <Row style={{ marginTop: '100px' }}>
                     <Col>
                         <div style={{ backgroundColor: 'rgba(0, 0, 0, 0.7)', padding: '10px', marginBottom: '10px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                             <h3 style={{ color: '#38B6FF', fontSize: '1.5em' }}>PASO 1: </h3>
@@ -93,7 +103,6 @@ function Justificaciones() {
                     </Col>
                 </Row>
                 <Row>
-                    {/* Formulario para la selección de fechas */}
                     <Col>
                         <Form>
                             <Row>
@@ -114,7 +123,6 @@ function Justificaciones() {
                     </Col>
                 </Row>
 
-                {/* Paso 2: Indique la/s asignatura/s */}
                 <Row style={{ marginBottom: '15px', marginTop: '15px' }}>
                     <Col>
                         <div style={{ backgroundColor: 'rgba(0, 0, 0, 0.7)', padding: '10px', marginBottom: '10px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
@@ -124,7 +132,6 @@ function Justificaciones() {
                     </Col>
                 </Row>
                 <Row>
-                    {/* Menú desplegable de asignaturas */}
                     <Col>
                         <DropdownButton id="dropdown-asignaturas" title="Seleccionar Asignatura">
                             <Dropdown.Item onClick={handleSeleccionarTodas}>Seleccionar Todas</Dropdown.Item>
@@ -137,11 +144,10 @@ function Justificaciones() {
                     </Col>
                 </Row>
 
-                {/* Lista de asignaturas seleccionadas  */}
                 <Row style={{ marginBottom: '30px' }}>
                     <Col>
                         {asignaturasSeleccionadas.length > 0 && (
-                            <div style={{backgroundColor: 'rgba(255, 255, 255, 0.8)', padding: '10px', marginBottom: '10px' }}>
+                            <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.8)', padding: '10px', marginBottom: '10px' }}>
                                 <h3 style={{ color: 'black', marginBottom: '5px', fontSize: '1.5em' }}>Asignaturas Seleccionadas:</h3>
                                 {asignaturasSeleccionadas.map((asignatura) => (
                                     <span key={asignatura.id}>
@@ -156,8 +162,7 @@ function Justificaciones() {
                     </Col>
                 </Row>
 
-                {/* Paso 3: Coméntenos sus razones */}
-                <Row style={{ marginBottom: '15px', marginTop: '15px'}}>
+                <Row style={{ marginBottom: '15px', marginTop: '15px' }}>
                     <Col>
                         <div style={{ backgroundColor: 'rgba(0, 0, 0, 0.7)', padding: '10px', marginBottom: '10px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                             <h3 style={{ color: '#38B6FF', fontSize: '1.5em' }}>PASO 3: </h3>
@@ -175,12 +180,11 @@ function Justificaciones() {
                     </Col>
                 </Row>
 
-                {/* Paso 4: Adjunte sus Documentos */}
                 <Row style={{ marginBottom: '15px', marginTop: '15px' }}>
                     <Col>
                         <div style={{ backgroundColor: 'rgba(0, 0, 0, 0.7)', padding: '10px', marginBottom: '10px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                             <h3 style={{ color: '#38B6FF', fontSize: '1.5em' }}>PASO 4: </h3>
-                            <h3 style={{ color: 'white', fontSize: '1.5em', marginLeft: '10px'}}>ADJUNTE SUS DOCUMENTOS:</h3>
+                            <h3 style={{ color: 'white', fontSize: '1.5em', marginLeft: '10px' }}>ADJUNTE SUS DOCUMENTOS:</h3>
                         </div>
                     </Col>
                 </Row>
@@ -194,7 +198,6 @@ function Justificaciones() {
                     </Col>
                 </Row>
 
-                {/* Botón para generar justificación */}
                 <Row>
                     <Col style={{ textAlign: 'center', marginTop: '30px' }}>
                         <Button variant="primary" onClick={generarJustificacion}>Enviar</Button>

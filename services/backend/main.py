@@ -8,7 +8,7 @@ from flask_cors import CORS
 
 
 from extensions import db
-from models import CREDENCIAL,Course,Enrollment
+from models import *
 
 import bcrypt
 import jwt
@@ -169,37 +169,6 @@ class CreateStudent(Resource):
 
 
 
-# Resource para editar un alumno
-@student_ns.route('/editar-alumno/<int:user_id>')
-class EditStudent(Resource):
-    @student_ns.expect(student_model)
-    def patch(self, user_id):
-        student = CREDENCIAL.query.get(user_id)
-        if not student:
-            return {"message": "User not found"}, 400
-        
-        data = request.json
-        student.rut = data.get("rut", student.rut)
-        student.first_name = data.get("first_name", student.first_name)
-        student.last_name = data.get("last_name", student.last_name)
-        student.email = data.get("email", student.email)
-        student.password = data.get("password", student.password)
-        student.tipo_acceso = data.get("tipo_acceso", student.tipo_acceso)
-
-        db.session.commit()
-        return {"message": "User updated successfully"}, 200
-
-# Resource para eliminar un alumno
-@student_ns.route('/eliminar-alumno/<int:user_id>')
-class DeleteStudent(Resource):
-    def delete(self, user_id):
-        student = CREDENCIAL.query.get(user_id)
-        if not student:
-            return {"message": "User not found"}, 400
-        
-        db.session.delete(student)
-        db.session.commit()
-        return {"message": "User deleted successfully"}, 200
 
 # Resource para buscar un alumno
 @student_ns.route('/buscar-alumno/<int:user_id>')
@@ -222,36 +191,7 @@ class SearchStudent(Resource):
 
 
 
-
-
-
-
-
 #################################################################### RUTAS CURSOS ####################################################################################
-# Endpoint to add a new course (admin only)
-@student_ns.route('/add-course')
-class AddCourse(Resource):
-    @token_required
-    def post(self, current_user):
-        if current_user.tipo_acceso != 'admin':
-            return {"error": "Admin access required"}, 403
-
-        data = request.get_json()
-        name = data.get('name')
-        description = data.get('description')
-
-        if not name:
-            return {"error": "Course name is required"}, 400
-
-        if Course.query.filter_by(name=name).first():
-            return {"error": "Course already exists"}, 409
-
-        new_course = Course(name=name, description=description)
-        db.session.add(new_course)
-        db.session.commit()
-
-        return {"message": "Course added successfully"}, 201
-    
 
 # Endpoint to enroll a student or professor in a course
 @student_ns.route('/enroll')
@@ -372,6 +312,42 @@ class GetAttendanceCount(Resource):
 
 # Add the namespace to the API
 api.add_namespace(attendance_ns, path='/api')
+
+
+@app.route('/api/justificaciones', methods=['POST'])
+def create_justificacion():
+    data = request.form
+    student_id = data['student_id']
+    enrollment_ids = request.form.getlist('enrollment_ids')
+    fecha_desde = data['fecha_desde']
+    fecha_hasta = data['fecha_hasta']
+    razones = data['razones']
+    archivos = request.files.getlist('archivos')
+
+    justificaciones = []
+    for enrollment_id in enrollment_ids:
+        archivos_paths = []
+        for archivo in archivos:
+            filename = archivo.filename
+            file_path = os.path.join('uploads', filename)
+            archivo.save(file_path)
+            archivos_paths.append(file_path)
+
+        justificacion = Justificacion(
+            student_id=student_id,
+            enrollment_id=enrollment_id,
+            fecha_desde=fecha_desde,
+            fecha_hasta=fecha_hasta,
+            razones=razones,
+            archivos=";".join(archivos_paths)
+        )
+        db.session.add(justificacion)
+        justificaciones.append(justificacion)
+
+    db.session.commit()
+
+    return jsonify([justificacion.to_json() for justificacion in justificaciones])
+
 
 #################################################################### RUTAS ASISTENCIA ####################################################################################
 
