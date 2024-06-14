@@ -72,6 +72,23 @@ class Course(db.Model):
             "carrera": self.carrera.name
         }
 
+class Schedule(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    course_id = db.Column(db.Integer, db.ForeignKey('course.id'), nullable=False)
+    dia = db.Column(db.String(50), nullable=False)  # E.g., "Lunes"
+    hora_inicio = db.Column(db.String(50), nullable=False)  # E.g., "10:00"
+    hora_fin = db.Column(db.String(50), nullable=False)  # E.g., "11:30"
+    course = db.relationship('Course', backref=db.backref('schedules', lazy=True))
+
+    def to_json(self):
+        return {
+            "id": self.id,
+            "course_id": self.course_id,
+            "dia": self.dia,
+            "hora_inicio": self.hora_inicio,
+            "hora_fin": self.hora_fin
+        }
+
 class Enrollment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False)
@@ -144,3 +161,5 @@ class DietaryPreference(db.Model):
             "vegano": self.vegano,
             "celiaco": self.celiaco
         }
+
+
