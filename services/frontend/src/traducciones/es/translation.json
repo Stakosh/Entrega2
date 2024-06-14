@@ -5,14 +5,14 @@
   "login": "Iniciar sesión",
   "newRegister": "Nuevo registro",
   "forgotPassword": "Olvidé mi contraseña",
-  "Attendances": "Asistencias",
-  "Student Attendance": "Asistencia de Estudiantes",
-  "Teacher View Attendance": "Vista de Asistencia del Profesor",
-  "View Attendance": "Ver Asistencia",
-  "View My Attendance": "Ver Mi Asistencia",
-  "Mark Attendance": "Marcar Asistencia",
-  "Upcoming Courses": "Próximos Cursos",
-  "Justifications": "Justificaciones"
+  "Asistencias": "Asistencias",
+  "Asistencia de Estudiantes": "Asistencia de Estudiantes",
+  "Vista de Asistencia del Profesor": "Vista de Asistencia del Profesor",
+  "Ver Asistencia": "Ver Asistencia",
+  "Ver Mi Asistencia": "Ver Mi Asistencia",
+  "Marcar Asistencia": "Marcar Asistencia",
+  "Próximos Cursos": "Próximos Cursos",
+  "Justificaciones": "Justificaciones"
   
 }
   

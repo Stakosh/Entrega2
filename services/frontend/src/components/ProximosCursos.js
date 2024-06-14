@@ -1,50 +1,29 @@
-import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Spinner } from 'react-bootstrap';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
-function ProximosCursos() {
-    const [courses, setCourses] = useState([]);
-    const [loading, setLoading] = useState(true);
+const ProximosCursos = () => {
+  const [cursos, setCursos] = useState([]);
 
-    useEffect(() => {
-        const fetchCourses = async () => {
-            try {
-                const response = await axios.get('http://localhost:5000/api/courses', {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('token')}`
-                    }
-                });
-                setCourses(response.data);
-                setLoading(false);
-            } catch (error) {
-                console.error('Error fetching courses:', error);
-                setLoading(false);
-            }
-        };
+  useEffect(() => {
+    const fetchCursos = async () => {
+      const response = await axios.get('/api/proximos-cursos', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      setCursos(response.data);
+    };
+    fetchCursos();
+  }, []);
 
-        fetchCourses();
-    }, []);
-
-    if (loading) {
-        return <Spinner animation="border" />;
-    }
-
-    return (
-        <Container>
-            <Row className="justify-content-center mt-4">
-                {courses.map(course => (
-                    <Col md={8} className="mb-4" key={course.id}>
-                        <Card>
-                            <Card.Body>
-                                <Card.Title>{course.name}</Card.Title>
-                                <Card.Text>{course.description}</Card.Text>
-                            </Card.Body>
-                        </Card>
-                    </Col>
-                ))}
-            </Row>
-        </Container>
-    );
-}
+  return (
+    <div>
+      <h1>Próximos Cursos</h1>
+      <ul>
+        {cursos.map(curso => (
+          <li key={curso.id}>{curso.nombre}</li>
+        ))}
+      </ul>
+    </div>
+  );
+};
 
 export default ProximosCursos;

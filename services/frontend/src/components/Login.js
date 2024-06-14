@@ -22,7 +22,7 @@ function Login() {
         try {
             const response = await axios.post('http://localhost:5000/api/login', formData);
             console.log('Login successful:', response.data);
-            
+
             // Save the token (if needed)
             localStorage.setItem('token', response.data.token);
 
@@ -38,10 +38,18 @@ function Login() {
     };
 
     return (
-        <div style={{ backgroundImage: `url(${ImgFondo})`, backgroundSize: 'cover', backgroundPosition: 'center', height: '100vh' }}>
+        <div style={{ 
+            backgroundImage: `url(${ImgFondo})`, 
+            backgroundSize: 'cover', 
+            backgroundPosition: 'center', 
+            height: '100vh',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center'
+        }}>
             <Container>
-                <Row className="justify-content-center align-items-center" style={{ height: '100%' }}>
-                    <Col md={6} lg={4} className="mt-20">
+                <Row className="justify-content-center align-items-center" style={{ minHeight: '100vh' }}>
+                    <Col md={8} lg={6} xl={4}>
                         <div className="login-box bg-white p-4 rounded shadow">
                             <h2 className="text-center mb-4">{t('login')}</h2>
                             <Form onSubmit={handleFormSubmit}>

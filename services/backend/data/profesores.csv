@@ -1,0 +1,6 @@
+id,nombre,apellido,correo,rut
+1,Juan,Pérez,juan.perez@example.com,12345678-9
+2,Maria,González,maria.gonzalez@example.com,23456789-0
+3,Carlos,Lopez,carlos.lopez@example.com,34567890-1
+4,Ana,Martinez,ana.martinez@example.com,45678901-2
+5,Luis,Rodriguez,luis.rodriguez@example.com,56789012-3

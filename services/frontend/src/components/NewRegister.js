@@ -100,8 +100,8 @@ function NewRegister() {
 
     return (
         <Container>
-            <Row>
-                <Col md={6} className="offset-md-3">
+            <Row className="justify-content-center">
+                <Col xs={12} sm={10} md={8} lg={6} xl={5}>
                     <div className="p-4 rounded shadow-lg bg-white mt-5">
                         <h2 className="text-center mb-4">Register</h2>
                         {error && <Alert variant="danger">{error}</Alert>}

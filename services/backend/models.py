@@ -1,3 +1,4 @@
+
 # models.py
 from sqlalchemy.types import Enum
 from extensions import db

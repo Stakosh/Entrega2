@@ -4,12 +4,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Navbar, Nav, Container, Image, Button } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import { FiLogOut } from 'react-icons/fi';
-import { useAuth } from './AuthContext'; // Make sure to import useAuth
+import { useAuth } from './AuthContext'; // Asegúrate de importar useAuth
 import '../App.css';
 
 const Layout = ({ children }) => {
     const { t, i18n } = useTranslation();
-    const { logout } = useAuth();
+    const { logout, isAuthenticated } = useAuth(); // Suponiendo que useAuth proporciona isAuthenticated
     const navigate = useNavigate();
 
     const changeLanguage = (lang) => {
@@ -32,7 +32,7 @@ const Layout = ({ children }) => {
                     <Navbar.Collapse id="basic-navbar-nav">
                         <Nav className='ml-auto'>
                             <Link to="/proximos-cursos" className='nav-link'>
-                                {t('Proximos Cursos')} {/* Proximos Cursos */}
+                                {t('Proximos Cursos')} {/* Próximos Cursos */}
                             </Link>
                             <Link to="/justificaciones" className='nav-link'>
                                 {t('Justificaciones')} {/* Justificaciones */}
@@ -52,9 +52,11 @@ const Layout = ({ children }) => {
                                 Español
                             </Button>
                         </div>
-                        <Button variant="outline-danger" size="sm" onClick={handleLogout}>
-                            <FiLogOut size={20} />
-                        </Button>
+                        {isAuthenticated && (
+                            <Button variant="outline-danger" size="sm" onClick={handleLogout}>
+                                <FiLogOut size={20} />
+                            </Button>
+                        )}
                     </div>
                 </Container>
             </Navbar>

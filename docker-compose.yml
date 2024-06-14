@@ -8,6 +8,7 @@ services:
     entrypoint: ["sh", "/app/entrypoint.sh"] # se asegura de ejecutar el .sh que verifica que se ejecute la base de datos 
     volumes:
       - "./services/backend:/app"
+      - "./services/backend/data:/app/data"
     ports:
       - "5000:5000"
     environment:
