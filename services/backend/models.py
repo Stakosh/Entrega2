@@ -76,8 +76,10 @@ class Schedule(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     course_id = db.Column(db.Integer, db.ForeignKey('course.id'), nullable=False)
     dia = db.Column(db.String(50), nullable=False)  # E.g., "Lunes"
-    hora_inicio = db.Column(db.String(50), nullable=False)  # E.g., "10:00"
-    hora_fin = db.Column(db.String(50), nullable=False)  # E.g., "11:30"
+    hora_inicio = db.Column(db.String(50), nullable=False)  # E.g., "08:00"
+    hora_fin = db.Column(db.String(50), nullable=False)  # E.g., "09:30"
+    sala = db.Column(db.String(50), nullable=False)  # E.g., "Sala 101"
+
     course = db.relationship('Course', backref=db.backref('schedules', lazy=True))
 
     def to_json(self):
@@ -86,7 +88,8 @@ class Schedule(db.Model):
             "course_id": self.course_id,
             "dia": self.dia,
             "hora_inicio": self.hora_inicio,
-            "hora_fin": self.hora_fin
+            "hora_fin": self.hora_fin,
+            "sala": self.sala
         }
 
 class Enrollment(db.Model):

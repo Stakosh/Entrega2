@@ -1,4 +1,4 @@
-id,id_curso,nombre,carrera,semestre,profesor
+id,course_id,nombre,carrera,semestre,profesor
 1,CORE101,CORE: CIVILIZACIÓN CONTEMPORÁNEA I,plan común,1,Prof. Alejandro García
 2,CORE103,CORE: ESCRITURA ARGUMENTATIVA,plan común,1,Prof. María Torres
 3,MAT105,CÁLCULO DIFERENCIAL,plan común,1,Prof. Juan Pérez

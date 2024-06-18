@@ -6,6 +6,8 @@ from app2.config import DevelopmentConfig
 from flask.cli import FlaskGroup
 from flask_cors import CORS
 
+from parse_courses import parse_courses_file, initialize_courses_and_careers, parse_schedules_file, initialize_schedules, assign_courses_to_students
+
 
 from extensions import db
 from models import *
@@ -353,34 +355,54 @@ def create_justificacion():
 
 
 
-
 # Creación de usuarios para testing
 def initialize_default_users():
     if not CREDENCIAL.query.first():
         users = [
             {
-                'rut': '20.723.182-7',
+                'rut': '207231827',
                 'first_name': 'Javiera',
                 'last_name': 'Soto',
                 'email': 'javi@correo.cl',
                 'password': 'queso',
-                'tipo_acceso': 'alumno'
+                'tipo_acceso': 'alumno',
+                'carrera': 'ing civil en energías'
             },
             {
-                'rut': '19.654.321-0',
+                'rut': '196543210',
                 'first_name': 'Nachito',
                 'last_name': 'Zuñiga',
                 'email': 'nachito@correo.cl',
                 'password': 'Nachito',
-                'tipo_acceso': 'admin'
+                'tipo_acceso': 'alumno',
+                'carrera': 'ing civil en computación'
             },
             {
-                'rut': '18.123.456-7',
+                'rut': '181234567',
                 'first_name': 'Cony',
                 'last_name': 'Contreras',
                 'email': 'cony@correo.cl',
                 'password': 'Cony',
-                'tipo_acceso': 'profesor'
+                'tipo_acceso': 'alumno',
+                'carrera': 'ing civil en electricidad'
+            },
+            {
+                'rut': '1',
+                'first_name': 'Admin',
+                'last_name': 'Admin',
+                'email': 'admin@correo.cl',
+                'password': 'admin',
+                'tipo_acceso': 'admin',
+                'carrera': None
+            },
+            {
+                'rut': '2',
+                'first_name': 'Profesor',
+                'last_name': 'Profesor',
+                'email': 'profe@correo.cl',
+                'password': 'profe',
+                'tipo_acceso': 'profesor',
+                'carrera': None
             }
         ]
 
@@ -395,19 +417,29 @@ def initialize_default_users():
                 tipo_acceso=user_data['tipo_acceso']
             )
             db.session.add(user)
-        db.session.commit()
+            db.session.commit()
+
+            if user_data['tipo_acceso'] == 'alumno':
+                carrera = Carrera.query.filter_by(name=user_data['carrera']).first()
+                if carrera:
+                    student = Student(credencial_id=user.id, carrera_name=carrera.name, semestre_que_cursa=1)
+                    db.session.add(student)
+                    db.session.commit()
+
 
 # Setup CORS
 CORS(app)
 
 # Create the database and tables if they don't exist
-time.sleep(10)
 with app.app_context():
+    time.sleep(10)  # Espera para asegurarse de que la base de datos esté lista
     db.create_all()
+    initialize_default_users()
+    courses_data = parse_courses_file('/app/data/asignaturas.csv')
+    initialize_courses_and_careers(courses_data)
+    schedules_data = parse_schedules_file('/app/data/horarios.csv')
+    initialize_schedules(schedules_data)
+    assign_courses_to_students()
 
 if __name__ == "__main__":
-    with app.app_context():
-        time.sleep(12)  # Asegúrate de que la base de datos esté lista
-        db.create_all()
-        initialize_default_users() #crea a los 3 usuarios por default 
-        app.run(debug=True, host='0.0.0.0')
+    app.run(debug=True, host='0.0.0.0')
