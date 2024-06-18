@@ -85,8 +85,6 @@ function Login() {
                                 <Button variant="link" onClick={() => navigate('/register')}>{t('newRegister')}</Button>
                                 <Button variant="link" onClick={() => navigate('/forgot-password')}>{t('forgotPassword')}</Button>
                             </div>
-                            <div className="text-center mt-3">
-                            </div>
                         </div>
                     </Col>
                 </Row>

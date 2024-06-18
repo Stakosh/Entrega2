@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Container, Button, Row, Col, Form, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 function NewRegister() {
     const navigate = useNavigate();
+    const { t } = useTranslation("global");
     const [formData, setFormData] = useState({
         rutNumber: '',
         dv: '',
@@ -57,12 +59,12 @@ function NewRegister() {
     const handleFormSubmit = async (event) => {
         event.preventDefault();
         if (formData.password !== formData.confirmPassword) {
-            setError('Passwords do not match.');
+            setError(t('passwordsDoNotMatch'));
             return;
         }
 
         if (!validateRut(formData.rutNumber, formData.dv)) {
-            setError('Invalid RUT format or incorrect verification digit.');
+            setError(t('invalidRut'));
             return;
         }
 
@@ -86,7 +88,7 @@ function NewRegister() {
 
             const data = await response.json();
             if (!response.ok) {
-                throw new Error(data.message || 'Failed to create credential');
+                throw new Error(data.message || t('creationFailed'));
             }
 
             console.log('Credential created:', data);
@@ -103,18 +105,18 @@ function NewRegister() {
             <Row className="justify-content-center">
                 <Col xs={12} sm={10} md={8} lg={6} xl={5}>
                     <div className="p-4 rounded shadow-lg bg-white mt-5">
-                        <h2 className="text-center mb-4">Register</h2>
+                        <h2 className="text-center mb-4">{t('register')}</h2>
                         {error && <Alert variant="danger">{error}</Alert>}
-                        {success && <Alert variant="success">Registration successful! Redirecting...</Alert>}
+                        {success && <Alert variant="success">{t('registrationSuccessful')}</Alert>}
                         <Form onSubmit={handleFormSubmit}>
                             <Row>
                                 <Col>
                                     <Form.Group controlId="formBasicRut" className="mb-3">
-                                        <Form.Label>RUT</Form.Label>
+                                        <Form.Label>{t('rut')}</Form.Label>
                                         <div className="input-group">
                                             <Form.Control
                                                 type="text"
-                                                placeholder="Enter RUT number"
+                                                placeholder={t('enterRutNumber')}
                                                 name="rutNumber"
                                                 value={formData.rutNumber}
                                                 onChange={handleChange}
@@ -125,7 +127,7 @@ function NewRegister() {
                                             </div>
                                             <Form.Control
                                                 type="text"
-                                                placeholder="DV"
+                                                placeholder={t('dv')}
                                                 name="dv"
                                                 value={formData.dv}
                                                 onChange={handleChange}
@@ -136,12 +138,11 @@ function NewRegister() {
                                 </Col>
                             </Row>
 
-                            {/* First Name */}
                             <Form.Group controlId="formBasicFirstName" className="mb-3">
-                                <Form.Label>First Name</Form.Label>
+                                <Form.Label>{t('firstName')}</Form.Label>
                                 <Form.Control
                                     type="text"
-                                    placeholder="Enter first name"
+                                    placeholder={t('enterFirstName')}
                                     name="first_name"
                                     value={formData.first_name}
                                     onChange={handleChange}
@@ -149,12 +150,11 @@ function NewRegister() {
                                 />
                             </Form.Group>
 
-                            {/* Last Name */}
                             <Form.Group controlId="formBasicLastName" className="mb-3">
-                                <Form.Label>Last Name</Form.Label>
+                                <Form.Label>{t('lastName')}</Form.Label>
                                 <Form.Control
                                     type="text"
-                                    placeholder="Enter last name"
+                                    placeholder={t('enterLastName')}
                                     name="last_name"
                                     value={formData.last_name}
                                     onChange={handleChange}
@@ -162,12 +162,11 @@ function NewRegister() {
                                 />
                             </Form.Group>
 
-                            {/* Email Address */}
                             <Form.Group controlId="formBasicEmail" className="mb-3">
-                                <Form.Label>Email Address</Form.Label>
+                                <Form.Label>{t('email')}</Form.Label>
                                 <Form.Control
                                     type="email"
-                                    placeholder="Enter email"
+                                    placeholder={t('enterEmail')}
                                     name="email"
                                     value={formData.email}
                                     onChange={handleChange}
@@ -175,12 +174,11 @@ function NewRegister() {
                                 />
                             </Form.Group>
 
-                            {/* Password */}
                             <Form.Group controlId="formBasicPassword" className="mb-3">
-                                <Form.Label>Password</Form.Label>
+                                <Form.Label>{t('password')}</Form.Label>
                                 <Form.Control
                                     type="password"
-                                    placeholder="Password"
+                                    placeholder={t('password')}
                                     name="password"
                                     value={formData.password}
                                     onChange={handleChange}
@@ -188,12 +186,11 @@ function NewRegister() {
                                 />
                             </Form.Group>
 
-                            {/* Confirm Password */}
                             <Form.Group controlId="formConfirmPassword" className="mb-3">
-                                <Form.Label>Confirm Password</Form.Label>
+                                <Form.Label>{t('confirmPassword')}</Form.Label>
                                 <Form.Control
                                     type="password"
-                                    placeholder="Confirm Password"
+                                    placeholder={t('confirmPassword')}
                                     name="confirmPassword"
                                     value={formData.confirmPassword}
                                     onChange={handleChange}
@@ -201,9 +198,8 @@ function NewRegister() {
                                 />
                             </Form.Group>
 
-                            {/* Access Type */}
                             <Form.Group controlId="formBasicAccessType" className="mb-3">
-                                <Form.Label>Access Type</Form.Label>
+                                <Form.Label>{t('accessType')}</Form.Label>
                                 <Form.Control
                                     as="select"
                                     name="tipo_acceso"
@@ -211,14 +207,14 @@ function NewRegister() {
                                     onChange={handleChange}
                                     required
                                 >
-                                    <option value="admin">admin</option>
-                                    <option value="profesor">profesor</option>
-                                    <option value="alumno">alumno</option>
+                                    <option value="admin">{t('admin')}</option>
+                                    <option value="profesor">{t('profesor')}</option>
+                                    <option value="alumno">{t('alumno')}</option>
                                 </Form.Control>
                             </Form.Group>
 
                             <Button variant="primary" type="submit" className="w-100">
-                                Register
+                                {t('register')}
                             </Button>
                         </Form>
                     </div>

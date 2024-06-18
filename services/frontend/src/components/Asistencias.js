@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 function Asistencias() {
     const navigate = useNavigate();
-    const { t } = useTranslation();
+    const { t } = useTranslation("global");
 
     return (
         <div>

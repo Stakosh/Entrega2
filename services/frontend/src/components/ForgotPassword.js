@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { Container, Button, Row, Col, Form } from 'react-bootstrap';
 import axios from 'axios';
 import ImgFondo from '../img/fondo-1.jpg';
+import { useTranslation } from 'react-i18next';
 
 function ForgotPassword() {
     const navigate = useNavigate();
+    const { t } = useTranslation("global");
     const [formData, setFormData] = useState({ name: '', rut: '', newPassword: '', confirmNewPassword: '' });
     const [userId, setUserId] = useState(null);
     const [step, setStep] = useState(1);
@@ -26,14 +28,14 @@ function ForgotPassword() {
             setStep(2);
         } catch (error) {
             console.error('Validation failed:', error.response?.data);
-            alert('Invalid name or RUT, please try again.');
+            alert(t('validationFailed'));
         }
     };
 
     const handleResetPassword = async (event) => {
         event.preventDefault();
         if (formData.newPassword !== formData.confirmNewPassword) {
-            alert('Passwords do not match, please try again.');
+            alert(t('passwordsDoNotMatch'));
             return;
         }
         try {
@@ -42,11 +44,11 @@ function ForgotPassword() {
                 newPassword: formData.newPassword
             });
             console.log('Password reset successful:', response.data);
-            alert('Password reset successful. You can now log in with your new password.');
+            alert(t('passwordResetSuccessful'));
             navigate('/');
         } catch (error) {
             console.error('Password reset failed:', error.response?.data);
-            alert('Password reset failed, please try again.');
+            alert(t('passwordResetFailed'));
         }
     };
 
@@ -58,63 +60,63 @@ function ForgotPassword() {
                         <div className="forgot-password-box bg-white p-4 rounded shadow">
                             {step === 1 ? (
                                 <>
-                                    <h2 className="text-center mb-4">Validate User</h2>
+                                    <h2 className="text-center mb-4">{t('validateUser')}</h2>
                                     <Form onSubmit={handleValidateUser}>
                                         <Form.Group controlId="formName" className="mb-3">
-                                            <Form.Label>Name:</Form.Label>
+                                            <Form.Label>{t('name')}:</Form.Label>
                                             <Form.Control
                                                 type="text"
                                                 name="name"
                                                 value={formData.name}
                                                 onChange={handleChange}
-                                                placeholder="Enter your name"
+                                                placeholder={t('enterYourName')}
                                                 required
                                             />
                                         </Form.Group>
                                         <Form.Group controlId="formRUT" className="mb-3">
-                                            <Form.Label>RUT:</Form.Label>
+                                            <Form.Label>{t('rut')}:</Form.Label>
                                             <Form.Control
                                                 type="text"
                                                 name="rut"
                                                 value={formData.rut}
                                                 onChange={handleChange}
-                                                placeholder="Enter your RUT (e.g., 1.111.111-1)"
+                                                placeholder={t('enterYourRUT')}
                                                 required
                                             />
                                         </Form.Group>
                                         <Button type="submit" className="w-100 mb-2" style={{ backgroundColor: '#83d134', color: 'black' }}>
-                                            Next
+                                            {t('next')}
                                         </Button>
                                     </Form>
                                 </>
                             ) : (
                                 <>
-                                    <h2 className="text-center mb-4">Reset Password</h2>
+                                    <h2 className="text-center mb-4">{t('resetPassword')}</h2>
                                     <Form onSubmit={handleResetPassword}>
                                         <Form.Group controlId="formNewPassword" className="mb-3">
-                                            <Form.Label>New Password:</Form.Label>
+                                            <Form.Label>{t('newPassword')}:</Form.Label>
                                             <Form.Control
                                                 type="password"
                                                 name="newPassword"
                                                 value={formData.newPassword}
                                                 onChange={handleChange}
-                                                placeholder="Enter your new password"
+                                                placeholder={t('enterYourNewPassword')}
                                                 required
                                             />
                                         </Form.Group>
                                         <Form.Group controlId="formConfirmNewPassword" className="mb-3">
-                                            <Form.Label>Confirm New Password:</Form.Label>
+                                            <Form.Label>{t('confirmNewPassword')}:</Form.Label>
                                             <Form.Control
                                                 type="password"
                                                 name="confirmNewPassword"
                                                 value={formData.confirmNewPassword}
                                                 onChange={handleChange}
-                                                placeholder="Confirm your new password"
+                                                placeholder={t('confirmYourNewPassword')}
                                                 required
                                             />
                                         </Form.Group>
                                         <Button type="submit" className="w-100 mb-2" style={{ backgroundColor: '#83d134', color: 'black' }}>
-                                            Reset Password
+                                            {t('resetPassword')}
                                         </Button>
                                     </Form>
                                 </>

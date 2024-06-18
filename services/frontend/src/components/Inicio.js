@@ -4,9 +4,11 @@ import '../App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import ImgFondo from '../img/foto-fondo2.jpg';
 import { Button, Container, Row, Col } from 'react-bootstrap';
+import { useTranslation } from 'react-i18next';
 
 function Inicio() {
-    const navigate = useNavigate();  // Hook to enable navigation
+    const navigate = useNavigate(); // Hook to enable navigation
+    const { t } = useTranslation("global") // Hook for translations
 
     return (
         <div>
@@ -31,7 +33,7 @@ function Inicio() {
                                 style={{ width: '50%', padding: '10px', color: 'black', backgroundColor: 'whitesmoke' }}
                                 onClick={() => navigate('/justificaciones')}
                             >
-                                Justificaciones
+                                {t('justificaciones')}
                             </Button>
                         </Row>
 
@@ -42,7 +44,7 @@ function Inicio() {
                                 style={{ width: '50%', padding: '10px', color: 'black', backgroundColor: 'whitesmoke' }}
                                 onClick={() => navigate('/cursos')}
                             >
-                                Próximos Cursos
+                                {t('proximosCursos')}
                             </Button>
                         </Row>
 
@@ -52,7 +54,7 @@ function Inicio() {
                                 style={{ width: '50%', padding: '10px', color: 'black', backgroundColor: 'whitesmoke' }}
                                 onClick={() => navigate('/asistencias')}
                             >
-                                Asistencias
+                                {t('asistencias')}
                             </Button>
                         </Row>
                     </Row>
