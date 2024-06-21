@@ -1,0 +1,52 @@
+/* Justificaciones.css */
+
+.justificaciones-container {
+    background-size: cover;
+    background-position: center top;
+    height: 100vh;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.step-header {
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 10px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.step-header h3 {
+    color: #38B6FF;
+    font-size: 1.5em;
+}
+
+.step-header h3:last-child {
+    color: white;
+    margin-left: 10px;
+    font-size: 1.5em;
+}
+
+.selected-subjects {
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.selected-subjects h3 {
+    color: black;
+    margin-bottom: 5px;
+    font-size: 1.5em;
+}
+
+.file-input {
+    margin-bottom: 30px;
+}
+
+.center-button {
+    text-align: center;
+    margin-top: 30px;
+}

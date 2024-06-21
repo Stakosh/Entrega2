@@ -3,6 +3,10 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { Button, Form, FormControl, FormGroup, Container, Row, Col, DropdownButton, Dropdown } from 'react-bootstrap';
 import ImgFondo from '../img/foto-fondo2.jpg';
 import { useTranslation } from 'react-i18next';
+import './Justificaciones.css';  // Importa el archivo CSS
+
+
+
 
 function Justificaciones() {
     const [fechaDesde, setFechaDesde] = useState('');
@@ -14,15 +18,10 @@ function Justificaciones() {
     const { t } = useTranslation("global");
 
     useEffect(() => {
-        // Simulating fetching subjects from backend
-        const asignaturasFromBackend = [
-            { id: 1, nombre: 'TICS311: ESTRUCTURAS DE DATOS Y ALGORITMOS' },
-            { id: 2, nombre: 'TICS411: MINERÍA DE DATOS' },
-            { id: 3, nombre: 'TICS420: PROGRAMACIÓN PROFESIONAL' },
-            { id: 4, nombre: 'ING421: GESTIÓN DE OPERACIONES' },
-            { id: 5, nombre: 'IND423: ORGANIZACIÓN INDUSTRIAL' },
-        ];
-        setAsignaturas(asignaturasFromBackend);
+        fetch('/api/estudiante/123/asignaturas') // Reemplaza 123 con el ID real del estudiante
+            .then(response => response.json())
+            .then(data => setAsignaturas(data))
+            .catch(error => console.error('Error fetching subjects:', error));
     }, []);
 
     const handleFechaDesdeChange = (e) => {
@@ -59,6 +58,7 @@ function Justificaciones() {
 
     const generarJustificacion = () => {
         const formData = new FormData();
+        formData.append('student_id', '123'); // Reemplaza 123 con el ID real del estudiante
         formData.append('fechaDesde', fechaDesde);
         formData.append('fechaHasta', fechaHasta);
         formData.append('razones', razones);
@@ -69,16 +69,18 @@ function Justificaciones() {
             formData.append(`asignatura${index}`, asignatura.id);
         });
 
-        fetch('/api/justificaciones', {
+        fetch('/api/justificacion', {
             method: 'POST',
             body: formData,
         })
             .then(response => response.json())
             .then(data => {
                 console.log('Success:', data);
+                alert('Justificación enviada correctamente');
             })
             .catch(error => {
                 console.error('Error:', error);
+                alert('Error al enviar la justificación');
             });
     };
 

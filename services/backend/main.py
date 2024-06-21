@@ -80,25 +80,26 @@ def token_required(f):
 
 #################################################################### RUTAS USUARIO ####################################################################################
 # para login de un alumno
-@student_ns.route('/login')
-class LoginStudent(Resource):
-    def post(self):
-        data = request.get_json()
-        email = data.get('email')
-        password = data.get('password')
+@app.route('/api/login', methods=['POST', 'OPTIONS'])
+def login():
+    if request.method == 'OPTIONS':
+        return '', 200  # Responde exitosamente a las solicitudes OPTIONS para CORS
 
-        if not email or not password:
-            return {"error": "Email and password are required"}, 400
+    data = request.get_json()
+    email = data.get('email')
+    password = data.get('password')
 
-        student = CREDENCIAL.query.filter_by(email=email).first()
+    if not email or not password:
+        return jsonify({"error": "Email and password are required"}), 400
 
-        if not student or not bcrypt.checkpw(password.encode('utf-8'), student.password.encode('utf-8')):
-            return {"error": "Invalid credentials"}, 401
+    student = CREDENCIAL.query.filter_by(email=email).first()
 
-        token = generate_token(student.id)
-        return {"token": token, "message": "Login successful"}, 200
+    if not student or not bcrypt.checkpw(password.encode('utf-8'), student.password.encode('utf-8')):
+        return jsonify({"error": "Invalid credentials"}), 401
 
-# para reestablecer clave, primero valida
+    token = generate_token(student.id)
+    return jsonify({"token": token, "message": "Login successful"}), 200
+
 @app.route('/api/validate-user', methods=['POST'])
 def validate_user():
     data = request.get_json()
@@ -110,8 +111,7 @@ def validate_user():
         return jsonify({"message": "User validated successfully", "user_id": user.id}), 200
     else:
         return jsonify({"error": "Invalid name or RUT"}), 400
-    
-# para reestablecer clave, luego permite cambiar clave
+
 @app.route('/api/reset-password', methods=['POST'])
 def reset_password():
     data = request.get_json()
@@ -224,23 +224,54 @@ class EnrollCourse(Resource):
 
 
 # API Endpoint to get courses for a student
-@student_ns.route('/courses')
-class StudentCourses(Resource):
-    @token_required
-    def get(self, current_user):
-        try:
-            courses = db.session.query(Course).join(Enrollment).filter(Enrollment.rut == current_user.rut).all()
-            return [course.to_dict() for course in courses], 200
-        except AttributeError as e:
-            return jsonify({"message": "Attribute error", "error": str(e)}), 400
+@app.route('/api/estudiante/<int:student_id>/asignaturas', methods=['GET'])
+def get_student_courses(student_id):
+    student = Student.query.get(student_id)
+    if not student:
+        return jsonify({'error': 'Student not found'}), 404
 
-# Agregar el namespace a la API
-api.add_namespace(student_ns, path='/api')
+    enrollments = Enrollment.query.filter_by(student_id=student.id).all()
+    courses = [enrollment.course.to_json() for enrollment in enrollments]
+
+    return jsonify(courses), 200
 
 #################################################################### FIN RUTAS CURSOS ####################################################################################
 
 
+## RUTAS JUSTIFICACIONES ##
+# API Endpoint para justificar 
+@app.route('/api/justificacion', methods=['POST'])
+def create_justificacion():
+    data = request.json
+    student_id = data.get('student_id')
+    enrollment_id = data.get('enrollment_id')
+    fecha_desde = data.get('fecha_desde')
+    fecha_hasta = data.get('fecha_hasta')
+    razones = data.get('razones')
+    archivos = data.get('archivos', '')
 
+    if not student_id or not enrollment_id or not fecha_desde or not fecha_hasta or not razones:
+        return jsonify({'error': 'Missing required fields'}), 400
+
+    try:
+        fecha_desde = datetime.strptime(fecha_desde, '%Y-%m-%d').date()
+        fecha_hasta = datetime.strptime(fecha_hasta, '%Y-%m-%d').date()
+    except ValueError:
+        return jsonify({'error': 'Invalid date format'}), 400
+
+    new_justificacion = Justificacion(
+        student_id=student_id,
+        enrollment_id=enrollment_id,
+        fecha_desde=fecha_desde,
+        fecha_hasta=fecha_hasta,
+        razones=razones,
+        archivos=archivos
+    )
+
+    db.session.add(new_justificacion)
+    db.session.commit()
+
+    return jsonify(new_justificacion.to_json()), 201
 
 
 
@@ -259,94 +290,8 @@ attendance_model = attendance_ns.model('Attendance', {
 })
 
 
-# Mark attendance
-@attendance_ns.route('/mark')
-class MarkAttendance(Resource):
-    @attendance_ns.expect(attendance_model)
-    def post(self):
-        data = request.get_json()
-        rut = data['rut']
-        course_id = data['course_id']
-        attendance_date = data['date']
-        present = data['present']
-
-        # Verificar el horario
-        now = datetime.utcnow()
-        if now.hour < 10 or now.hour >= 12:
-            return {"error": "You can only mark attendance between 10:00 and 12:00 UTC."}, 400
-
-        # Check if the student is enrolled in the course
-        enrollment = Enrollment.query.filter_by(rut=rut, course_id=course_id).first()
-        if not enrollment:
-            return {"error": "Student not enrolled in the course"}, 400
-
-        # Check if attendance for this date already exists
-        existing_attendance = Attendance.query.filter_by(rut=rut, course_id=course_id, date=attendance_date).first()
-        if existing_attendance:
-            return {"error": "Attendance already marked for this date"}, 409
-
-        # Add attendance record
-        attendance = Attendance(rut=rut, course_id=course_id, date=attendance_date, present=present)
-        db.session.add(attendance)
-        db.session.commit()
-
-        return {"message": "Attendance marked successfully"}, 201
-
-# Get attendance records
-@attendance_ns.route('/records')
-class GetAttendanceRecords(Resource):
-    def get(self):
-        rut = request.args.get('rut')
-        course_id = request.args.get('course_id')
-        records = Attendance.query.filter_by(rut=rut, course_id=course_id).all()
-        return jsonify([record.to_dict() for record in records])
-
-# Get attendance count
-@attendance_ns.route('/count')
-class GetAttendanceCount(Resource):
-    def get(self):
-        rut = request.args.get('rut')
-        course_id = request.args.get('course_id')
-        count = Attendance.query.filter_by(rut=rut, course_id=course_id, present=True).count()
-        return jsonify({'count': count})
-
-# Add the namespace to the API
-api.add_namespace(attendance_ns, path='/api')
 
 
-@app.route('/api/justificaciones', methods=['POST'])
-def create_justificacion():
-    data = request.form
-    student_id = data['student_id']
-    enrollment_ids = request.form.getlist('enrollment_ids')
-    fecha_desde = data['fecha_desde']
-    fecha_hasta = data['fecha_hasta']
-    razones = data['razones']
-    archivos = request.files.getlist('archivos')
-
-    justificaciones = []
-    for enrollment_id in enrollment_ids:
-        archivos_paths = []
-        for archivo in archivos:
-            filename = archivo.filename
-            file_path = os.path.join('uploads', filename)
-            archivo.save(file_path)
-            archivos_paths.append(file_path)
-
-        justificacion = Justificacion(
-            student_id=student_id,
-            enrollment_id=enrollment_id,
-            fecha_desde=fecha_desde,
-            fecha_hasta=fecha_hasta,
-            razones=razones,
-            archivos=";".join(archivos_paths)
-        )
-        db.session.add(justificacion)
-        justificaciones.append(justificacion)
-
-    db.session.commit()
-
-    return jsonify([justificacion.to_json() for justificacion in justificaciones])
 
 
 #################################################################### RUTAS ASISTENCIA ####################################################################################
