@@ -6,12 +6,10 @@ from app2.config import DevelopmentConfig
 from flask.cli import FlaskGroup
 from flask_cors import CORS
 
-from parse_courses import parse_courses_file, initialize_courses_and_careers, parse_schedules_file, initialize_schedules, create_students_from_credencial
-# enroll_students_in_courses
-# assign_courses_to_students
+from parse_courses import parse_courses_file, initialize_courses_and_careers, parse_schedules_file, initialize_schedules, create_students_from_credencial,assign_courses_to_students
 from extensions import db
 from models import *
-
+#enroll_students_in_courses,
 import bcrypt
 import jwt
 import os
@@ -355,6 +353,7 @@ def create_justificacion():
 
 
 
+
 # Creación de usuarios para testing, usuarios universales en CREDENCIALES
 def initialize_default_users():
     if not CREDENCIAL.query.first():
@@ -437,8 +436,8 @@ with app.app_context():
     schedules_data = parse_schedules_file('/app/data/horarios.csv')
     initialize_schedules(schedules_data)
     print("se crearon horarios")
-    create_students_from_credencial()
-    #assign_courses_to_students()
+    #create_students_from_credencial()
+    assign_courses_to_students()
     #enroll_students_in_courses()
 
 if __name__ == "__main__":

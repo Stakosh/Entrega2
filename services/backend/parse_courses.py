@@ -89,15 +89,35 @@ def initialize_schedules(schedules_data):
 def create_students_from_credencial():
     credenciales = CREDENCIAL.query.filter_by(tipo_acceso='alumno').all()
     for credencial in credenciales:
-        student = Student(
-            credencial_id=credencial.id,
-            rut=credencial.rut,
-            first_name=credencial.first_name,
-            last_name=credencial.last_name,
-            carrera=credencial.carrera,
-            semestre_que_cursa=1  # Ajuste según el requerimiento
-        )
-        db.session.add(student)
+        try:
+            # Verificar si el estudiante ya existe
+            existing_student = Student.query.filter_by(rut=credencial.rut).first()
+            if not existing_student:
+                student = Student(
+                    credencial_id=credencial.id,
+                    rut=credencial.rut,
+                    first_name=credencial.first_name,
+                    last_name=credencial.last_name,
+                    carrera=credencial.carrera,
+                    semestre_que_cursa=1  # Ajuste según el requerimiento
+                )
+                db.session.add(student)
+            else:
+                print(f"El estudiante con RUT {credencial.rut} ya existe.")
+        except Exception as e:
+            print(f"Error al crear el estudiante con RUT {credencial.rut}: {e}")
     db.session.commit()
 
 
+def assign_courses_to_students():
+    students = Student.query.all()
+    for student in students:
+        courses = Course.query.join(Carrera).filter(Carrera.name == student.carrera).all()
+        for course in courses:
+            existing_enrollment = Enrollment.query.filter_by(student_id=student.id, course_id=course.id).first()
+            if not existing_enrollment:
+                enrollment = Enrollment(student_id=student.id, course_id=course.id)
+                db.session.add(enrollment)
+            else:
+                print(f"El estudiante {student.first_name} {student.last_name} ya está inscrito en el curso {course.name}.")
+    db.session.commit()
