@@ -11,6 +11,7 @@ class CREDENCIAL(db.Model):
     email = db.Column(db.String(100), unique=True)
     password = db.Column(db.String(200))
     tipo_acceso = db.Column(Enum('admin', 'profesor', 'alumno', name='tipo_acceso'), nullable=False)
+    carrera = db.Column(db.String(100), nullable=True)  # Campo para almacenar la carrera
 
     def to_json(self):
         return {
@@ -20,7 +21,8 @@ class CREDENCIAL(db.Model):
             "last_name": self.last_name,
             "email": self.email,
             "password": self.password,
-            "tipo_acceso": self.tipo_acceso
+            "tipo_acceso": self.tipo_acceso,
+            "carrera": self.carrera
         }
 
 class Carrera(db.Model):
@@ -36,10 +38,12 @@ class Carrera(db.Model):
 class Student(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     credencial_id = db.Column(db.Integer, db.ForeignKey('CREDENCIAL.id'), nullable=False)
-    carrera_name = db.Column(db.String(100), db.ForeignKey('carrera.name'), nullable=False)
     credencial = db.relationship('CREDENCIAL', backref=db.backref('students', lazy=True))
-    carrera = db.relationship('Carrera', backref=db.backref('students', lazy=True), foreign_keys=[carrera_name])
-    semestre_que_cursa = db.Column(db.Integer)
+    rut = db.Column(db.String(100), nullable=False)
+    first_name = db.Column(db.String(100), nullable=False)
+    last_name = db.Column(db.String(100), nullable=False)
+    carrera = db.Column(db.String(100), nullable=False)
+    semestre_que_cursa = db.Column(db.Integer, nullable=False)
 
     def to_json(self):
         return {
@@ -48,7 +52,7 @@ class Student(db.Model):
             "rut": self.rut,
             "first_name": self.first_name,
             "last_name": self.last_name,
-            "carrera": self.carrera.name,
+            "carrera": self.carrera,
             "semestre_que_cursa": self.semestre_que_cursa
         }
 
@@ -164,5 +168,3 @@ class DietaryPreference(db.Model):
             "vegano": self.vegano,
             "celiaco": self.celiaco
         }
-
-

@@ -6,9 +6,9 @@ from app2.config import DevelopmentConfig
 from flask.cli import FlaskGroup
 from flask_cors import CORS
 
-from parse_courses import parse_courses_file, initialize_courses_and_careers, parse_schedules_file, initialize_schedules, assign_courses_to_students
-
-
+from parse_courses import parse_courses_file, initialize_courses_and_careers, parse_schedules_file, initialize_schedules, create_students_from_credencial
+# enroll_students_in_courses
+# assign_courses_to_students
 from extensions import db
 from models import *
 
@@ -355,7 +355,7 @@ def create_justificacion():
 
 
 
-# Creación de usuarios para testing
+# Creación de usuarios para testing, usuarios universales en CREDENCIALES
 def initialize_default_users():
     if not CREDENCIAL.query.first():
         users = [
@@ -366,7 +366,7 @@ def initialize_default_users():
                 'email': 'javi@correo.cl',
                 'password': 'queso',
                 'tipo_acceso': 'alumno',
-                'carrera': 'ing civil en energías'
+                'carrera': 'INFORMATICA'
             },
             {
                 'rut': '196543210',
@@ -375,7 +375,7 @@ def initialize_default_users():
                 'email': 'nachito@correo.cl',
                 'password': 'Nachito',
                 'tipo_acceso': 'alumno',
-                'carrera': 'ing civil en computación'
+                'carrera': 'INDUSTRIAL'
             },
             {
                 'rut': '181234567',
@@ -384,7 +384,7 @@ def initialize_default_users():
                 'email': 'cony@correo.cl',
                 'password': 'Cony',
                 'tipo_acceso': 'alumno',
-                'carrera': 'ing civil en electricidad'
+                'carrera': 'ENERGIA'
             },
             {
                 'rut': '1',
@@ -392,8 +392,7 @@ def initialize_default_users():
                 'last_name': 'Admin',
                 'email': 'admin@correo.cl',
                 'password': 'admin',
-                'tipo_acceso': 'admin',
-                'carrera': None
+                'tipo_acceso': 'admin'
             },
             {
                 'rut': '2',
@@ -401,8 +400,7 @@ def initialize_default_users():
                 'last_name': 'Profesor',
                 'email': 'profe@correo.cl',
                 'password': 'profe',
-                'tipo_acceso': 'profesor',
-                'carrera': None
+                'tipo_acceso': 'profesor'
             }
         ]
 
@@ -414,17 +412,13 @@ def initialize_default_users():
                 last_name=user_data['last_name'],
                 email=user_data['email'],
                 password=hashed_password,
-                tipo_acceso=user_data['tipo_acceso']
+                tipo_acceso=user_data['tipo_acceso'],
+                carrera=user_data.get('carrera')  # Añadir la carrera si está disponible
             )
             db.session.add(user)
             db.session.commit()
 
-            if user_data['tipo_acceso'] == 'alumno':
-                carrera = Carrera.query.filter_by(name=user_data['carrera']).first()
-                if carrera:
-                    student = Student(credencial_id=user.id, carrera_name=carrera.name, semestre_que_cursa=1)
-                    db.session.add(student)
-                    db.session.commit()
+
 
 
 # Setup CORS
@@ -434,12 +428,18 @@ CORS(app)
 with app.app_context():
     time.sleep(10)  # Espera para asegurarse de que la base de datos esté lista
     db.create_all()
+    print("se crearon modelos de la db")
     initialize_default_users()
+    print("se crearon usuarios en CREDENCIAL")
     courses_data = parse_courses_file('/app/data/asignaturas.csv')
     initialize_courses_and_careers(courses_data)
+    print("se crearon carreras")
     schedules_data = parse_schedules_file('/app/data/horarios.csv')
     initialize_schedules(schedules_data)
-    assign_courses_to_students()
+    print("se crearon horarios")
+    create_students_from_credencial()
+    #assign_courses_to_students()
+    #enroll_students_in_courses()
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0')

@@ -1,0 +1,6 @@
+rut,first_name,last_name,email,password,tipo_acceso,carrera
+207231827,Javiera,Soto,javi@correo.cl,queso,alumno,INFORMATICA
+196543210,Nachito,Zuñiga,nachito@correo.cl,Nachito,alumno,INDUSTRIAL
+181234567,Cony,Contreras,cony@correo.cl,Cony,alumno,ENERGIA
+1,Admin,Admin,admin@correo.cl,admin,admin,
+2,Profesor,Profesor,profe@correo.cl,profe,profesor,

@@ -1,6 +1,25 @@
 import csv
+import bcrypt
 from extensions import db
 from models import Carrera, Course, Schedule, Student, CREDENCIAL, Enrollment
+
+def read_users_from_csv(file_path):
+    users = []
+    with open(file_path, mode='r', encoding='utf-8') as file:
+        csv_reader = csv.DictReader(file)
+        for row in csv_reader:
+            users.append({
+                'rut': row['rut'],
+                'first_name': row['first_name'],
+                'last_name': row['last_name'],
+                'email': row['email'],
+                'password': row['password'],
+                'tipo_acceso': row['tipo_acceso'],
+                'carrera': row['carrera'] if row['carrera'] else None
+            })
+    return users
+
+
 
 def parse_courses_file(file_path):
     courses = []
@@ -67,23 +86,18 @@ def initialize_schedules(schedules_data):
             db.session.add(new_schedule)
     db.session.commit()
 
-def assign_courses_to_students():
-    students = Student.query.all()
-    for student in students:
-        carrera = Carrera.query.filter_by(name=student.carrera_name).first()
-        if carrera:
-            courses = Course.query.filter_by(carrera_id=carrera.id).all()
-            for course in courses:
-                student.courses.append(course)
+def create_students_from_credencial():
+    credenciales = CREDENCIAL.query.filter_by(tipo_acceso='alumno').all()
+    for credencial in credenciales:
+        student = Student(
+            credencial_id=credencial.id,
+            rut=credencial.rut,
+            first_name=credencial.first_name,
+            last_name=credencial.last_name,
+            carrera=credencial.carrera,
+            semestre_que_cursa=1  # Ajuste según el requerimiento
+        )
+        db.session.add(student)
     db.session.commit()
 
-def enroll_students_in_courses():
-    students = Student.query.all()
-    for student in students:
-        carrera = Carrera.query.filter_by(name=student.carrera_name).first()
-        if carrera:
-            courses = Course.query.filter_by(carrera_id=carrera.id, semestre=student.semestre_que_cursa).all()
-            for course in courses:
-                enrollment = Enrollment(student_id=student.id, course_id=course.id)
-                db.session.add(enrollment)
-    db.session.commit()
+
