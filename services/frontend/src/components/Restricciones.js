@@ -18,6 +18,10 @@ function Restricciones({ onSubmit }) {
         }));
     };
 
+    const handleSubmit = () => {
+        onSubmit(restricciones);
+    };
+
     return (
         <div>
             <h4>{t('tienesRestriccion')}</h4>
@@ -46,7 +50,7 @@ function Restricciones({ onSubmit }) {
                     onChange={handleRestriccionChange}
                 />
             </Form.Group>
-            <Button variant="primary" onClick={() => onSubmit(restricciones)}>{t('confirmar')}</Button>
+            <Button variant="primary" onClick={handleSubmit}>{t('confirmar')}</Button>
         </div>
     );
 }

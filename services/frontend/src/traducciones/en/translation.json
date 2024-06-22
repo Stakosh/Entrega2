@@ -65,5 +65,6 @@
   "tienesRestriccion": "Do you have any dietary restrictions?",
   "celiaquia": "Celiac Disease",
   "intoleranciaLactosa": "Lactose Intolerance",
-  "otra": "Other"
+  "otra": "Other",
+  "encuestaAlimentaria": "Food Survey"
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Button, Row, Col } from 'react-bootstrap';
+import { Container, Button, Row, Col, Modal } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import Modalidad from './Modalidad';
 import Restricciones from './Restricciones';
@@ -10,6 +10,8 @@ function ProximosCursos() {
     const [cursos, setCursos] = useState([]);
     const [selectedCurso, setSelectedCurso] = useState(null);
     const [modalidad, setModalidad] = useState(null);
+    const [encuestaCompletada, setEncuestaCompletada] = useState(false);
+    const [showEncuesta, setShowEncuesta] = useState(false);
 
     useEffect(() => {
         // Simulating fetching data from API
@@ -18,6 +20,10 @@ function ProximosCursos() {
             { curso: 'Programación Profe.', fecha: '18/06 13:10', sala: '202D' },
             { curso: 'Programación Profe.', fecha: '25/06 11:45', sala: '202D' }
         ]);
+
+        // Simulating fetching user's survey completion status from API
+        const encuestaStatus = localStorage.getItem('encuestaCompletada') === 'true';
+        setEncuestaCompletada(encuestaStatus);
     }, []);
 
     const handleConfirmar = (index) => {
@@ -28,9 +34,14 @@ function ProximosCursos() {
         setModalidad(mode);
     };
 
-    const handleSubmit = (restricciones) => {
-        // Process form submission logic here
-        alert(`Curso confirmado: ${selectedCurso.curso}\nModalidad: ${modalidad}\nRestricciones alimentarias: ${JSON.stringify(restricciones)}`);
+    const handleSubmit = () => {
+        alert(`Curso confirmado: ${selectedCurso.curso}\nModalidad: ${modalidad}`);
+    };
+
+    const handleEncuestaSubmit = (restricciones) => {
+        setEncuestaCompletada(true);
+        localStorage.setItem('encuestaCompletada', 'true');
+        setShowEncuesta(false);
     };
 
     return (
@@ -58,7 +69,14 @@ function ProximosCursos() {
                                 {cursos.map((curso, index) => (
                                     <div key={index} className="mb-3">
                                         <p>{curso.curso} - {curso.fecha} - {curso.sala}</p>
-                                        <Button variant="primary" onClick={() => handleConfirmar(index)}>{t('confirmar')}</Button>
+                                        <Button 
+                                            variant="primary" 
+                                            onClick={() => handleConfirmar(index)}
+                                            disabled={!encuestaCompletada}
+                                            style={{ backgroundColor: encuestaCompletada ? '#0d6efd' : '#6c757d' }}
+                                        >
+                                            {t('confirmar')}
+                                        </Button>
                                     </div>
                                 ))}
                             </div>
@@ -66,13 +84,37 @@ function ProximosCursos() {
                                 <div className="mt-4">
                                     <h3>{selectedCurso.curso} - {selectedCurso.fecha} - {selectedCurso.sala}</h3>
                                     {!modalidad && <Modalidad onModalidadChange={handleModalidadChange} />}
-                                    {modalidad && modalidad === 'presencial' && <Restricciones onSubmit={handleSubmit} />}
-                                    {modalidad && modalidad === 'online' && <Button onClick={() => handleSubmit({})}>{t('confirmar')}</Button>}
+                                    {modalidad && (
+                                        <Button 
+                                            variant="primary" 
+                                            onClick={handleSubmit}
+                                            disabled={!encuestaCompletada}
+                                            style={{ backgroundColor: encuestaCompletada ? '#0d6efd' : '#6c757d' }}
+                                        >
+                                            {t('confirmar')}
+                                        </Button>
+                                    )}
                                 </div>
                             )}
+                            <Button 
+                                variant="info" 
+                                className="mt-4" 
+                                onClick={() => setShowEncuesta(true)}
+                            >
+                                {t('encuestaAlimentaria')}
+                            </Button>
                         </div>
                     </Col>
                 </Row>
+
+                <Modal show={showEncuesta} onHide={() => setShowEncuesta(false)}>
+                    <Modal.Header closeButton>
+                        <Modal.Title>{t('encuestaAlimentaria')}</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <Restricciones onSubmit={handleEncuestaSubmit} />
+                    </Modal.Body>
+                </Modal>
             </Container>
         </div>
     );
