@@ -56,8 +56,16 @@
   "alumno": "Alumno",
   "invalidRut": "Formato de RUT inválido o dígito verificador incorrecto.",
   "creationFailed": "No se pudo crear la credencial",
-  "registrationSuccessful": "¡Registro exitoso! Redirigiendo..."
-  
+  "registrationSuccessful": "¡Registro exitoso! Redirigiendo...",
+  "proximosCursos": "Próximos Cursos",
+  "confirmar": "Confirmar",
+  "comoParticiparas": "¿Cómo participarás a este curso?",
+  "presencial": "Presencial",
+  "online": "Online",
+  "tienesRestriccion": "¿Tienes alguna restricción alimentaria?",
+  "celiaquia": "Celiaquía",
+  "intoleranciaLactosa": "Intolerancia a la Lactosa",
+  "otra": "Otra"
 }
   
 

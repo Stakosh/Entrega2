@@ -56,6 +56,14 @@
   "alumno": "Student",
   "invalidRut": "Invalid RUT format or incorrect verification digit.",
   "creationFailed": "Failed to create credential",
-  "registrationSuccessful": "Registration successful! Redirecting..."
-  
+  "registrationSuccessful": "Registration successful! Redirecting...",
+  "proximosCursos": "Upcoming Courses",
+  "confirmar": "Confirm",
+  "comoParticiparas": "How will you participate in this course?",
+  "presencial": "In-person",
+  "online": "Online",
+  "tienesRestriccion": "Do you have any dietary restrictions?",
+  "celiaquia": "Celiac Disease",
+  "intoleranciaLactosa": "Lactose Intolerance",
+  "otra": "Other"
 }
