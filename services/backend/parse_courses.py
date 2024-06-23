@@ -99,8 +99,9 @@ def create_students_from_credencial():
                     first_name=credencial.first_name,
                     last_name=credencial.last_name,
                     carrera=credencial.carrera,
-                    semestre_que_cursa=1  # Ajuste según el requerimiento
+                    semestre_que_cursa=4  # Ajuste según el requerimiento
                 )
+                print(f"El estudiante con RUT {credencial.rut} fue creado exitosamente.")
                 db.session.add(student)
             else:
                 print(f"El estudiante con RUT {credencial.rut} ya existe.")
@@ -112,12 +113,23 @@ def create_students_from_credencial():
 def assign_courses_to_students():
     students = Student.query.all()
     for student in students:
-        courses = Course.query.join(Carrera).filter(Carrera.name == student.carrera).all()
+        # Filtrar los cursos por carrera y semestre actual del estudiante
+        courses = Course.query.join(Carrera).filter(
+            Carrera.name == student.carrera,
+            Course.semestre == student.semestre_que_cursa
+        ).all()
+        
         for course in courses:
+            # Verificar si ya está inscrito en el curso
             existing_enrollment = Enrollment.query.filter_by(student_id=student.id, course_id=course.id).first()
             if not existing_enrollment:
-                enrollment = Enrollment(student_id=student.id, course_id=course.id)
-                db.session.add(enrollment)
+                if course.semestre == student.semestre_que_cursa:
+                    enrollment = Enrollment(student_id=student.id, course_id=course.id)
+                    db.session.add(enrollment)
+                    print(f"La asignatura {course.name} fue inscrita para el estudiante {student.first_name} {student.last_name}.")
+                else:
+                    print(f"La asignatura {course.name} no corresponde al semestre que cursa el estudiante {student.first_name} {student.last_name}.")
             else:
                 print(f"El estudiante {student.first_name} {student.last_name} ya está inscrito en el curso {course.name}.")
+    
     db.session.commit()

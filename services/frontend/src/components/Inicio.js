@@ -42,7 +42,7 @@ function Inicio() {
                                 variant="light"
                                 className="mb-3"
                                 style={{ width: '50%', padding: '10px', color: 'black', backgroundColor: 'whitesmoke' }}
-                                onClick={() => navigate('/cursos')}
+                                onClick={() => navigate('/proximos-cursos')}
                             >
                                 {t('proximosCursos')}
                             </Button>

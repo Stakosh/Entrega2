@@ -3,12 +3,10 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { Button, Form, FormControl, FormGroup, Container, Row, Col, DropdownButton, Dropdown } from 'react-bootstrap';
 import ImgFondo from '../img/foto-fondo2.jpg';
 import { useTranslation } from 'react-i18next';
-import './Justificaciones.css';  // Importa el archivo CSS
-
-
-
+import { useAuth } from './AuthContext';
 
 function Justificaciones() {
+    const { studentData } = useAuth();
     const [fechaDesde, setFechaDesde] = useState('');
     const [fechaHasta, setFechaHasta] = useState('');
     const [razones, setRazones] = useState('');
@@ -18,11 +16,16 @@ function Justificaciones() {
     const { t } = useTranslation("global");
 
     useEffect(() => {
-        fetch('/api/estudiante/123/asignaturas') // Reemplaza 123 con el ID real del estudiante
-            .then(response => response.json())
-            .then(data => setAsignaturas(data))
-            .catch(error => console.error('Error fetching subjects:', error));
-    }, []);
+        if (studentData) {
+            fetch(`/api/estudiante/${studentData.id}/asignaturas`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Asignaturas:', data);
+                    setAsignaturas(data);
+                })
+                .catch(error => console.error('Error fetching subjects:', error));
+        }
+    }, [studentData]);
 
     const handleFechaDesdeChange = (e) => {
         setFechaDesde(e.target.value);
@@ -58,7 +61,7 @@ function Justificaciones() {
 
     const generarJustificacion = () => {
         const formData = new FormData();
-        formData.append('student_id', '123'); // Reemplaza 123 con el ID real del estudiante
+        formData.append('student_id', studentData.id); // Usar el ID real del estudiante
         formData.append('fechaDesde', fechaDesde);
         formData.append('fechaHasta', fechaHasta);
         formData.append('razones', razones);
@@ -141,7 +144,7 @@ function Justificaciones() {
                             <Dropdown.Item onClick={handleSeleccionarTodas}>{t('selectAll')}</Dropdown.Item>
                             {asignaturas.map((asignatura) => (
                                 <Dropdown.Item key={asignatura.id} onClick={() => handleAsignaturaSeleccionada(asignatura)}>
-                                    {asignatura.nombre}
+                                    {asignatura.name}
                                 </Dropdown.Item>
                             ))}
                         </DropdownButton>
@@ -156,7 +159,7 @@ function Justificaciones() {
                                 {asignaturasSeleccionadas.map((asignatura) => (
                                     <span key={asignatura.id}>
                                         <Button variant="light" style={{ marginRight: '5px', marginBottom: '5px' }}>
-                                            {asignatura.nombre}
+                                            {asignatura.name}
                                         </Button>
                                         <Button variant="danger" size="sm" onClick={() => handleQuitarAsignatura(asignatura)}>{t('remove')}</Button>
                                     </span>

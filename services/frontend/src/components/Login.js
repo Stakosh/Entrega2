@@ -27,7 +27,7 @@ function Login() {
             localStorage.setItem('token', response.data.token);
 
             // Update authentication state
-            login(response.data.user);
+            login(response.data.user, response.data.student_data);
 
             // Navigate to the 'inicio' route if credentials match
             navigate('/inicio');
@@ -82,7 +82,6 @@ function Login() {
                                 </Button>
                             </Form>
                             <div className="text-center">
-                                <Button variant="link" onClick={() => navigate('/register')}>{t('newRegister')}</Button>
                                 <Button variant="link" onClick={() => navigate('/forgot-password')}>{t('forgotPassword')}</Button>
                             </div>
                         </div>

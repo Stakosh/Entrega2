@@ -76,8 +76,6 @@ def token_required(f):
 
 
 
-
-
 #################################################################### RUTAS USUARIO ####################################################################################
 # para login de un alumno
 @app.route('/api/login', methods=['POST', 'OPTIONS'])
@@ -92,14 +90,48 @@ def login():
     if not email or not password:
         return jsonify({"error": "Email and password are required"}), 400
 
-    student = CREDENCIAL.query.filter_by(email=email).first()
+    user = CREDENCIAL.query.filter_by(email=email).first()
 
-    if not student or not bcrypt.checkpw(password.encode('utf-8'), student.password.encode('utf-8')):
+    if not user or not bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
         return jsonify({"error": "Invalid credentials"}), 401
 
-    token = generate_token(student.id)
-    return jsonify({"token": token, "message": "Login successful"}), 200
+    token = generate_token(user.id)
+    
+    # Verificar si el usuario es un estudiante
+    if user.tipo_acceso == 'alumno':
+        student = Student.query.filter_by(credencial_id=user.id).first()
+        student_data = {
+            "id": student.id,
+            "rut": student.rut,
+            "first_name": student.first_name,
+            "last_name": student.last_name,
+            "carrera": student.carrera,
+            "semestre_que_cursa": student.semestre_que_cursa
+        }
+    else:
+        student_data = None
 
+    return jsonify({"token": token, "message": "Login successful", "user": {"id": user.id, "email": user.email, "tipo_acceso": user.tipo_acceso}, "student_data": student_data}), 200
+
+
+
+
+
+@app.route('/api/check-access', methods=['POST'])
+def check_access():
+    data = request.json
+    email = data.get('email')
+    user = CREDENCIAL.query.filter_by(email=email).first()
+    if user:
+        return jsonify({'access_type': user.tipo_acceso}), 200
+    else:
+        return jsonify({'error': 'User not found'}), 404
+
+
+
+
+
+#para cambio de clave, primero se valide el usuario
 @app.route('/api/validate-user', methods=['POST'])
 def validate_user():
     data = request.get_json()
@@ -112,6 +144,15 @@ def validate_user():
     else:
         return jsonify({"error": "Invalid name or RUT"}), 400
 
+
+
+
+
+
+
+
+
+#cambio de clave luego de validacion
 @app.route('/api/reset-password', methods=['POST'])
 def reset_password():
     data = request.get_json()
@@ -126,6 +167,9 @@ def reset_password():
         return jsonify({"message": "Password reset successful"}), 200
     else:
         return jsonify({"error": "User not found"}), 400
+
+
+
 
 # Endpoint para crear un nuevo alumno
 @student_ns.route('/creacion-nuevo-alumno')
@@ -223,34 +267,36 @@ class EnrollCourse(Resource):
         return {"message": "Enrolled in course successfully"}, 201
 
 
-# API Endpoint to get courses for a student
-@app.route('/api/estudiante/<int:student_id>/asignaturas', methods=['GET'])
-def get_student_courses(student_id):
-    student = Student.query.get(student_id)
-    if not student:
-        return jsonify({'error': 'Student not found'}), 404
-
-    enrollments = Enrollment.query.filter_by(student_id=student.id).all()
-    courses = [enrollment.course.to_json() for enrollment in enrollments]
-
-    return jsonify(courses), 200
 
 #################################################################### FIN RUTAS CURSOS ####################################################################################
 
 
-## RUTAS JUSTIFICACIONES ##
-# API Endpoint para justificar 
+ ########################## RUTAS JUSTIFICACIONES ##########################
+
+# Ruta para obtener asignaturas del semestre actual del estudiante
+@app.route('/api/estudiante/<int:student_id>/asignaturas', methods=['GET'])
+def get_asignaturas_estudiante(student_id):
+    # Obtener las asignaturas en las que está inscrito el estudiante
+    asignaturas = db.session.query(Course).join(Enrollment).filter(
+        Enrollment.student_id == student_id
+    ).all()
+    
+    asignaturas_json = [asignatura.to_json() for asignatura in asignaturas]
+    return jsonify(asignaturas_json)
+
+
+
+
+# API Endpoint para justificar
 @app.route('/api/justificacion', methods=['POST'])
 def create_justificacion():
-    data = request.json
+    data = request.form  # Cambiamos a request.form para manejar FormData
     student_id = data.get('student_id')
-    enrollment_id = data.get('enrollment_id')
-    fecha_desde = data.get('fecha_desde')
-    fecha_hasta = data.get('fecha_hasta')
+    fecha_desde = data.get('fechaDesde')
+    fecha_hasta = data.get('fechaHasta')
     razones = data.get('razones')
-    archivos = data.get('archivos', '')
 
-    if not student_id or not enrollment_id or not fecha_desde or not fecha_hasta or not razones:
+    if not student_id or not fecha_desde or not fecha_hasta or not razones:
         return jsonify({'error': 'Missing required fields'}), 400
 
     try:
@@ -259,13 +305,21 @@ def create_justificacion():
     except ValueError:
         return jsonify({'error': 'Invalid date format'}), 400
 
+    archivos = []
+    for key in request.files:
+        archivo = request.files[key]
+        archivo.save(f"ruta/a/guardar/{archivo.filename}")
+        archivos.append(archivo.filename)
+
+    asignaturas_ids = [data.get(f'asignatura{index}') for index in range(len(data)) if data.get(f'asignatura{index}')]
+
     new_justificacion = Justificacion(
         student_id=student_id,
-        enrollment_id=enrollment_id,
         fecha_desde=fecha_desde,
         fecha_hasta=fecha_hasta,
         razones=razones,
-        archivos=archivos
+        archivos=",".join(archivos),
+        asignaturas=",".join(asignaturas_ids)
     )
 
     db.session.add(new_justificacion)
@@ -314,19 +368,19 @@ def initialize_default_users():
             },
             {
                 'rut': '196543210',
-                'first_name': 'Nachito',
+                'first_name': 'Ignacio',
                 'last_name': 'Zuñiga',
                 'email': 'nachito@correo.cl',
-                'password': 'Nachito',
+                'password': 'nachito',
                 'tipo_acceso': 'alumno',
                 'carrera': 'INDUSTRIAL'
             },
             {
                 'rut': '181234567',
-                'first_name': 'Cony',
+                'first_name': 'Constanza',
                 'last_name': 'Contreras',
                 'email': 'cony@correo.cl',
-                'password': 'Cony',
+                'password': 'cony',
                 'tipo_acceso': 'alumno',
                 'carrera': 'ENERGIA'
             },
@@ -381,7 +435,7 @@ with app.app_context():
     schedules_data = parse_schedules_file('/app/data/horarios.csv')
     initialize_schedules(schedules_data)
     print("se crearon horarios")
-    #create_students_from_credencial()
+    create_students_from_credencial()
     assign_courses_to_students()
     #enroll_students_in_courses()
 
