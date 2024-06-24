@@ -65,5 +65,11 @@
   "celiaquia": "Celiac Disease",
   "intoleranciaLactosa": "Lactose Intolerance",
   "otra": "Other",
-  "encuestaAlimentaria": "Food Survey"
+  "encuestaAlimentaria": "Food Survey",
+  "verAsistencias": "Ver Asistencias",
+  "leyenda": "Leyenda",
+  "inasistencia": "Inasistencia",
+  "asistencia": "Asistencia",
+  "noHayClases": "Aún no hay clases"
+
 }

@@ -4,7 +4,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Navbar, Nav, Container, Image, Button } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import { FiLogOut } from 'react-icons/fi';
-import { useAuth } from './AuthContext'; // Asegúrate de importar useAuth
+import { useAuth } from './AuthContext'; 
 import '../App.css';
 
 const Layout = ({ children }) => {
