@@ -87,12 +87,7 @@ def token_required(f):
     decorator.__name__ = f.__name__
     return decorator
 
-
-
-
-
 ######################## RUTAS USUARIO (generales) ####################################################################################
-
 
 # API Endpoint para ruta para login 
 @app.route('/api/login', methods=['POST', 'OPTIONS'])
@@ -114,22 +109,57 @@ def login():
 
     token = generate_token(user.id)
     
-    # Verificar si el usuario es un estudiante
+    # Datos del estudiante
+    student_data = None
     if user.tipo_acceso == 'alumno':
         student = Student.query.filter_by(credencial_id=user.id).first()
-        student_data = {
-            "id": student.id,
-            "rut": student.rut,
-            "first_name": student.first_name,
-            "last_name": student.last_name,
-            "carrera": student.carrera,
-            "semestre_que_cursa": student.semestre_que_cursa
-        }
-    else:
-        student_data = None
+        if student:
+            student_data = {
+                "id": student.id,
+                "rut": student.rut,
+                "first_name": student.first_name,
+                "last_name": student.last_name,
+                "carrera": student.carrera,
+                "semestre_que_cursa": student.semestre_que_cursa
+            }
 
-    return jsonify({"token": token, "message": "Login successful", "user": {"id": user.id, "email": user.email, "tipo_acceso": user.tipo_acceso}, "student_data": student_data}), 200
+    # Datos del profesor
+    teacher_data = None
+    if user.tipo_acceso == 'profesor':
+        teacher = Teacher.query.filter_by(credencial_id=user.id).first()
+        if teacher:
+            teacher_data = {
+                "id": teacher.id,
+                "rut": teacher.rut,
+                "first_name": teacher.first_name,
+                "last_name": teacher.last_name
+            }
 
+    # Datos del administrador
+    admin_data = None
+    if user.tipo_acceso == 'admin':
+        admin = Admin.query.filter_by(credencial_id=user.id).first()
+        if admin:
+            admin_data = {
+                "id": admin.id,
+                "rut": admin.rut,
+                "first_name": admin.first_name,
+                "last_name": admin.last_name
+            }
+
+    return jsonify({
+        "token": token,
+        "message": "Login successful",
+        "user": {
+            "id": user.id,
+            "email": user.email,
+            "name": user.first_name + ' ' + user.last_name,
+            "tipo_acceso": user.tipo_acceso
+        },
+        "student_data": student_data,
+        "teacher_data": teacher_data,
+        "admin_data": admin_data
+    }), 200
 
 
 

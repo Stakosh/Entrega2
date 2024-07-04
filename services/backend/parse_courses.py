@@ -1,7 +1,7 @@
 import csv
 import bcrypt
 from extensions import db
-from models import Carrera, Course, Schedule, Student, CREDENCIAL, Enrollment, Teacher
+from models import Carrera, Course, Schedule, Student, CREDENCIAL, Enrollment, Teacher, Admin
 
 def initialize_default_users():
     if not CREDENCIAL.query.first():
@@ -10,7 +10,7 @@ def initialize_default_users():
                 'rut': '207231827',
                 'first_name': 'Javiera',
                 'last_name': 'Soto',
-                'email': 'javi@correo.cl',
+                'email': 'jav.soto@alumnos.uai.cl',
                 'password': 'queso',
                 'tipo_acceso': 'alumno',
                 'carrera': 'INFORMATICA'
@@ -112,6 +112,16 @@ def initialize_default_users():
             )
             db.session.add(new_user)
             db.session.commit()
+
+            if user['tipo_acceso'] == 'admin':
+                new_admin = Admin(
+                    credencial_id=new_user.id,
+                    rut=user['rut'],
+                    first_name=user['first_name'],
+                    last_name=user['last_name']
+                )
+                db.session.add(new_admin)
+                db.session.commit()
 
 
 
