@@ -140,29 +140,36 @@ class Attendance(db.Model):
             "course": self.enrollment.course.name
         }
 
+justificacion_asignaturas = db.Table('justificacion_asignaturas',
+    db.Column('justificacion_id', db.Integer, db.ForeignKey('justificacion.id'), primary_key=True),
+    db.Column('course_id', db.Integer, db.ForeignKey('course.id'), primary_key=True)
+)
+
+
 class Justificacion(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False)
-    enrollment_id = db.Column(db.Integer, db.ForeignKey('enrollment.id'), nullable=False)
     fecha_desde = db.Column(db.Date, nullable=False)
     fecha_hasta = db.Column(db.Date, nullable=False)
     razones = db.Column(db.String(500), nullable=False)
     archivos = db.Column(db.String(200))  # Assuming you store file paths
-    student = db.relationship('Student', backref=db.backref('justificaciones', lazy=True))
-    enrollment = db.relationship('Enrollment', backref=db.backref('justificaciones', lazy=True))
+    # Añadir relación many-to-many con asignaturas
+    asignaturas = db.relationship('Course', secondary='justificacion_asignaturas', backref=db.backref('justificaciones', lazy=True))
 
     def to_json(self):
         return {
             "id": self.id,
             "student_id": self.student_id,
-            "enrollment_id": self.enrollment_id,
             "fecha_desde": self.fecha_desde.strftime('%Y-%m-%d'),
             "fecha_hasta": self.fecha_hasta.strftime('%Y-%m-%d'),
             "razones": self.razones,
             "archivos": self.archivos,
-            "student": self.student.first_name + " " + self.student.last_name,
-            "course": self.enrollment.course.name
+            "asignaturas": [asignatura.name for asignatura in self.asignaturas]
         }
+
+
+
+
 
 class DietaryPreference(db.Model):
     id = db.Column(db.Integer, primary_key=True)

@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from flask_restx import Api, Resource, Namespace, fields
 from flask import request, jsonify, Flask
+from werkzeug.utils import secure_filename
 from app2.config import DevelopmentConfig
 
 from flask.cli import FlaskGroup
@@ -29,6 +30,12 @@ CORS(app, resources={r"/api/*": {
     "supports_credentials": True,
     "max_age": 3600
 }})
+
+
+# Configuración de la carpeta de subida de archivos (justificaciones)
+UPLOAD_FOLDER = os.getenv('UPLOAD_FOLDER', 'uploads')  # Obtener de la variable de entorno o usar 'uploads' por defecto
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)  # Crear la carpeta si no existe
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER  # Configurar la carpeta de subidas en Flask
 
 
 
@@ -252,7 +259,7 @@ def get_horario_estudiante(student_id):
 
 ######################## RUTAS CURSOS ####################################################################################
 
-# API Endpointpara inscribir a alumnos o profesores a cursos
+# API Endpoint para inscribir a alumnos o profesores a cursos
 @student_ns.route('/enroll')
 class EnrollCourse(Resource):
     @token_required
@@ -288,6 +295,7 @@ class EnrollCourse(Resource):
 
 ######################## RUTAS JUSTIFICACIONES ##########################################################
 
+# API Endpoint para encontrar asignaturas del estudiante
 @app.route('/api/estudiante/<int:student_id>/asignaturas', methods=['GET'])
 def get_asignaturas_estudiante(student_id):
     print(f"Fetching subjects for student_id: {student_id}")  # Añadir registro de consola
@@ -298,53 +306,57 @@ def get_asignaturas_estudiante(student_id):
     asignaturas_json = [asignatura.to_json() for asignatura in asignaturas]
     return jsonify(asignaturas_json)
 
+
+
+# API Endpoint para enviar justificaciones
 @app.route('/api/justificacion', methods=['POST'])
 def create_justificacion():
+    data = request.form  # Cambiamos a request.form para manejar FormData
+    student_id = data.get('student_id')
+    fecha_desde = data.get('fechaDesde')
+    fecha_hasta = data.get('fechaHasta')
+    razones = data.get('razones')
+
+    if not student_id or not fecha_desde or not fecha_hasta or not razones:
+        return jsonify({'error': 'Missing required fields'}), 400
+
     try:
-        data = request.form  # Cambiamos a request.form para manejar FormData
-        student_id = data.get('student_id')
-        fecha_desde = data.get('fechaDesde')
-        fecha_hasta = data.get('fechaHasta')
-        razones = data.get('razones')
+        fecha_desde = datetime.strptime(fecha_desde, '%Y-%m-%d').date()
+        fecha_hasta = datetime.strptime(fecha_hasta, '%Y-%m-%d').date()
+    except ValueError:
+        return jsonify({'error': 'Invalid date format'}), 400
 
-        if not student_id or not fecha_desde or not fecha_hasta or not razones:
-            return jsonify({'error': 'Missing required fields'}), 400
-
+    archivos = []
+    for key in request.files:
+        archivo = request.files[key]
+        filename = secure_filename(archivo.filename)
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         try:
-            fecha_desde = datetime.strptime(fecha_desde, '%Y-%m-%d').date()
-            fecha_hasta = datetime.strptime(fecha_hasta, '%Y-%m-%d').date()
-        except ValueError:
-            return jsonify({'error': 'Invalid date format'}), 400
+            archivo.save(file_path)
+            archivos.append(filename)
+        except Exception as e:
+            return jsonify({'error': f'Error saving file: {e}'}), 500
 
-        archivos = []
-        for key in request.files:
-            archivo = request.files[key]
-            archivo.save(f"ruta/a/guardar/{archivo.filename}")
-            archivos.append(archivo.filename)
+    asignaturas_ids = [data.get(f'asignatura{index}') for index in range(len(data)) if data.get(f'asignatura{index}')]
 
-        asignaturas_ids = [data.get(f'asignatura{index}') for index in range(len(data)) if data.get(f'asignatura{index}')]
+    # Obtén los objetos Course correspondientes a los IDs
+    asignaturas = Course.query.filter(Course.id.in_(asignaturas_ids)).all()
 
-        new_justificacion = Justificacion(
-            student_id=student_id,
-            fecha_desde=fecha_desde,
-            fecha_hasta=fecha_hasta,
-            razones=razones,
-            archivos=",".join(archivos),
-            asignaturas=",".join(asignaturas_ids)
-        )
+    new_justificacion = Justificacion(
+        student_id=student_id,
+        fecha_desde=fecha_desde,
+        fecha_hasta=fecha_hasta,
+        razones=razones,
+        archivos=",".join(archivos)
+    )
+    
+    # Añadir asignaturas a la justificación
+    new_justificacion.asignaturas.extend(asignaturas)
 
-        db.session.add(new_justificacion)
-        db.session.commit()
+    db.session.add(new_justificacion)
+    db.session.commit()
 
-        return jsonify(new_justificacion.to_json()), 201
-
-    except Exception as e:
-        print(f"Error al crear la justificación: {e}")
-        return jsonify({'error': 'Internal server error'}), 500
-
-
-
-
+    return jsonify(new_justificacion.to_json()), 201
 ######################## RUTAS ASISTENCIA ####################################################################################
 
 # Namespace for Attendance
