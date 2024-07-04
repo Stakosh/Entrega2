@@ -7,14 +7,17 @@ import { FiLogOut } from 'react-icons/fi';
 import { useAuth } from './AuthContext'; 
 import '../App.css';
 
+
 const Layout = ({ children }) => {
-    const { t, i18n } = useTranslation();
-    const { logout, isAuthenticated } = useAuth(); // Suponiendo que useAuth proporciona isAuthenticated
+    const { t, i18n } = useTranslation('global'); // Usa el namespace 'global'
+    console.log(i18n.language); // Verifica el idioma actual
+    console.log(t('proximosCursos')); // Verifica la traducción
+    const { logout, isAuthenticated } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
 
-    const changeLanguage = (lang) => {
-        i18n.changeLanguage(lang);
+    const changeLanguage = (lng) => {
+        i18n.changeLanguage(lng);
     };
 
     const handleLogout = () => {

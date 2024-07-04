@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Button, Form, FormControl, FormGroup, Container, Row, Col, DropdownButton, Dropdown } from 'react-bootstrap';
-import ImgFondo from '../img/foto-fondo2.jpg';
+import { Button, Form, Container, Row, Col, DropdownButton, Dropdown, Card } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from './AuthContext';
+import './styles/Justificaciones.css'; // Añade una hoja de estilos personalizada
 
 function Justificaciones() {
     const { studentData } = useAuth();
@@ -17,13 +17,16 @@ function Justificaciones() {
 
     useEffect(() => {
         if (studentData) {
-            fetch(`/api/estudiante/${studentData.id}/asignaturas`)
+            console.log('Fetching asignaturas for studentData:', studentData);
+            fetch(`http://localhost:5000/api/estudiante/${studentData.id}/asignaturas`)
                 .then(response => response.json())
                 .then(data => {
                     console.log('Asignaturas:', data);
                     setAsignaturas(data);
                 })
                 .catch(error => console.error('Error fetching subjects:', error));
+        } else {
+            console.log('No studentData available');
         }
     }, [studentData]);
 
@@ -71,12 +74,17 @@ function Justificaciones() {
         asignaturasSeleccionadas.forEach((asignatura, index) => {
             formData.append(`asignatura${index}`, asignatura.id);
         });
-
-        fetch('/api/justificacion', {
+    
+        fetch('http://localhost:5000/api/justificacion', {
             method: 'POST',
             body: formData,
         })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
             .then(data => {
                 console.log('Success:', data);
                 alert('Justificación enviada correctamente');
@@ -88,126 +96,78 @@ function Justificaciones() {
     };
 
     return (
-        <div
-            style={{
-                backgroundImage: `url(${ImgFondo})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center top',
-                height: '100vh',
-                textAlign: 'center',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-            }}
-        >
-            <Container>
-                <Row style={{ marginTop: '100px' }}>
-                    <Col>
-                        <div style={{ backgroundColor: 'rgba(0, 0, 0, 0.7)', padding: '10px', marginBottom: '10px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                            <h3 style={{ color: '#38B6FF', fontSize: '1.5em' }}>{t('step')} 1: </h3>
-                            <h3 style={{ color: 'white', fontSize: '1.5em', marginLeft: '10px' }}>{t('dateRange')}:</h3>
-                        </div>
-                    </Col>
-                </Row>
-                <Row>
-                    <Col>
-                        <Form>
-                            <Row>
-                                <Col>
-                                    <Form.Group controlId="fechaDesde">
-                                        <Form.Label style={{ color: 'white' }}>{t('from')}:</Form.Label>
-                                        <Form.Control type="date" value={fechaDesde} onChange={handleFechaDesdeChange} />
-                                    </Form.Group>
-                                </Col>
-                                <Col>
-                                    <Form.Group controlId="fechaHasta">
-                                        <Form.Label style={{ color: 'white' }}>{t('to')}:</Form.Label>
-                                        <Form.Control type="date" value={fechaHasta} onChange={handleFechaHastaChange} />
-                                    </Form.Group>
-                                </Col>
-                            </Row>
-                        </Form>
-                    </Col>
-                </Row>
+        <div className="justificaciones-bg">
+            <Container className="justificaciones-container">
+                <Row className="justify-content-center">
+                    <Col md={8} lg={6}>
+                        <Card className="justificaciones-card">
+                            <Card.Body>
+                                <Card.Title className="text-center mb-4">{t('justificationRequest')}</Card.Title>
+                                <Form>
+                                    <div className="justificaciones-step">
+                                        <h4>{t('step')} 1: {t('dateRange')}</h4>
+                                        <Row>
+                                            <Col>
+                                                <Form.Group controlId="fechaDesde">
+                                                    <Form.Label>{t('from')}:</Form.Label>
+                                                    <Form.Control type="date" value={fechaDesde} onChange={handleFechaDesdeChange} />
+                                                </Form.Group>
+                                            </Col>
+                                            <Col>
+                                                <Form.Group controlId="fechaHasta">
+                                                    <Form.Label>{t('to')}:</Form.Label>
+                                                    <Form.Control type="date" value={fechaHasta} onChange={handleFechaHastaChange} />
+                                                </Form.Group>
+                                            </Col>
+                                        </Row>
+                                    </div>
 
-                <Row style={{ marginBottom: '15px', marginTop: '15px' }}>
-                    <Col>
-                        <div style={{ backgroundColor: 'rgba(0, 0, 0, 0.7)', padding: '10px', marginBottom: '10px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                            <h3 style={{ color: '#38B6FF', fontSize: '1.5em' }}>{t('step')} 2: </h3>
-                            <h3 style={{ color: 'white', fontSize: '1.5em', marginLeft: '10px' }}>{t('selectSubjects')}:</h3>
-                        </div>
-                    </Col>
-                </Row>
-                <Row>
-                    <Col>
-                        <DropdownButton id="dropdown-asignaturas" title={t('selectSubject')}>
-                            <Dropdown.Item onClick={handleSeleccionarTodas}>{t('selectAll')}</Dropdown.Item>
-                            {asignaturas.map((asignatura) => (
-                                <Dropdown.Item key={asignatura.id} onClick={() => handleAsignaturaSeleccionada(asignatura)}>
-                                    {asignatura.name}
-                                </Dropdown.Item>
-                            ))}
-                        </DropdownButton>
-                    </Col>
-                </Row>
+                                    <div className="justificaciones-step">
+                                        <h4>{t('step')} 2: {t('selectSubjects')}</h4>
+                                        <DropdownButton id="dropdown-asignaturas" title={t('selectSubject')}>
+                                            <Dropdown.Item onClick={handleSeleccionarTodas}>{t('selectAll')}</Dropdown.Item>
+                                            {asignaturas.map((asignatura) => (
+                                                <Dropdown.Item key={asignatura.id} onClick={() => handleAsignaturaSeleccionada(asignatura)}>
+                                                    {asignatura.name}
+                                                </Dropdown.Item>
+                                            ))}
+                                        </DropdownButton>
+                                    </div>
 
-                <Row style={{ marginBottom: '30px' }}>
-                    <Col>
-                        {asignaturasSeleccionadas.length > 0 && (
-                            <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.8)', padding: '10px', marginBottom: '10px' }}>
-                                <h3 style={{ color: 'black', marginBottom: '5px', fontSize: '1.5em' }}>{t('selectedSubjects')}:</h3>
-                                {asignaturasSeleccionadas.map((asignatura) => (
-                                    <span key={asignatura.id}>
-                                        <Button variant="light" style={{ marginRight: '5px', marginBottom: '5px' }}>
-                                            {asignatura.name}
-                                        </Button>
-                                        <Button variant="danger" size="sm" onClick={() => handleQuitarAsignatura(asignatura)}>{t('remove')}</Button>
-                                    </span>
-                                ))}
-                            </div>
-                        )}
-                    </Col>
-                </Row>
+                                    {asignaturasSeleccionadas.length > 0 && (
+                                        <div className="justificaciones-selected">
+                                            <h5>{t('selectedSubjects')}:</h5>
+                                            {asignaturasSeleccionadas.map((asignatura) => (
+                                                <div key={asignatura.id} className="selected-asignatura">
+                                                    <Button variant="outline-primary" className="mr-2 mb-2">
+                                                        {asignatura.name}
+                                                    </Button>
+                                                    <Button variant="danger" size="sm" onClick={() => handleQuitarAsignatura(asignatura)}>{t('remove')}</Button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
 
-                <Row style={{ marginBottom: '15px', marginTop: '15px' }}>
-                    <Col>
-                        <div style={{ backgroundColor: 'rgba(0, 0, 0, 0.7)', padding: '10px', marginBottom: '10px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                            <h3 style={{ color: '#38B6FF', fontSize: '1.5em' }}>{t('step')} 3: </h3>
-                            <h3 style={{ color: 'white', fontSize: '1.5em', marginLeft: '10px' }}>{t('commentReasons')}:</h3>
-                        </div>
-                    </Col>
-                </Row>
-                <Row>
-                    <Col>
-                        <Form>
-                            <FormGroup controlId="razones">
-                                <FormControl as="textarea" rows={5} maxLength={500} value={razones} onChange={handleRazonesChange} placeholder={t('commentHere')} />
-                            </FormGroup>
-                        </Form>
-                    </Col>
-                </Row>
+                                    <div className="justificaciones-step">
+                                        <h4>{t('step')} 3: {t('commentReasons')}</h4>
+                                        <Form.Group controlId="razones">
+                                            <Form.Control as="textarea" rows={5} maxLength={500} value={razones} onChange={handleRazonesChange} placeholder={t('commentHere')} />
+                                        </Form.Group>
+                                    </div>
 
-                <Row style={{ marginBottom: '15px', marginTop: '15px' }}>
-                    <Col>
-                        <div style={{ backgroundColor: 'rgba(0, 0, 0, 0.7)', padding: '10px', marginBottom: '10px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                            <h3 style={{ color: '#38B6FF', fontSize: '1.5em' }}>{t('step')} 4: </h3>
-                            <h3 style={{ color: 'white', fontSize: '1.5em', marginLeft: '10px' }}>{t('attachDocuments')}:</h3>
-                        </div>
-                    </Col>
-                </Row>
-                <Row>
-                    <Col>
-                        <Form>
-                            <FormGroup controlId="archivos">
-                                <FormControl type="file" multiple onChange={handleArchivoChange} />
-                            </FormGroup>
-                        </Form>
-                    </Col>
-                </Row>
+                                    <div className="justificaciones-step">
+                                        <h4>{t('step')} 4: {t('attachDocuments')}</h4>
+                                        <Form.Group controlId="archivos">
+                                            <Form.Control type="file" multiple onChange={handleArchivoChange} />
+                                        </Form.Group>
+                                    </div>
 
-                <Row>
-                    <Col style={{ textAlign: 'center', marginTop: '30px' }}>
-                        <Button variant="primary" onClick={generarJustificacion}>{t('submit')}</Button>
+                                    <div className="text-center mt-4">
+                                        <Button variant="primary" onClick={generarJustificacion}>{t('submit')}</Button>
+                                    </div>
+                                </Form>
+                            </Card.Body>
+                        </Card>
                     </Col>
                 </Row>
             </Container>

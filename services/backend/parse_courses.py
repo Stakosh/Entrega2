@@ -1,7 +1,120 @@
 import csv
 import bcrypt
 from extensions import db
-from models import Carrera, Course, Schedule, Student, CREDENCIAL, Enrollment
+from models import Carrera, Course, Schedule, Student, CREDENCIAL, Enrollment, Teacher
+
+def initialize_default_users():
+    if not CREDENCIAL.query.first():
+        users = [
+            {
+                'rut': '207231827',
+                'first_name': 'Javiera',
+                'last_name': 'Soto',
+                'email': 'javi@correo.cl',
+                'password': 'queso',
+                'tipo_acceso': 'alumno',
+                'carrera': 'INFORMATICA'
+            },
+            {
+                'rut': '196543210',
+                'first_name': 'Ignacio',
+                'last_name': 'Zuñiga',
+                'email': 'nachito@correo.cl',
+                'password': 'nachito',
+                'tipo_acceso': 'alumno',
+                'carrera': 'INDUSTRIAL'
+            },
+            {
+                'rut': '181234567',
+                'first_name': 'Constanza',
+                'last_name': 'Contreras',
+                'email': 'cony@correo.cl',
+                'password': 'cony',
+                'tipo_acceso': 'alumno',
+                'carrera': 'ENERGIA'
+            },
+            {
+                'rut': '1',
+                'first_name': 'Admin',
+                'last_name': 'Admin',
+                'email': 'admin@correo.cl',
+                'password': 'admin',
+                'tipo_acceso': 'admin'
+            },
+            {
+                'rut': '2',
+                'first_name': 'Gabriel',
+                'last_name': 'Torres',
+                'email': 'profe@correo.cl',
+                'password': 'profe',
+                'tipo_acceso': 'profesor'
+            },
+            {
+                'rut': '3',
+                'first_name': 'Eduardo',
+                'last_name': 'Gutiérrez',
+                'email': 'eduardo@correo.cl',
+                'password': 'eduardo',
+                'tipo_acceso': 'profesor'
+            },
+            {
+                'rut': '4',
+                'first_name': 'Ricardo',
+                'last_name': 'Fernández',
+                'email': 'ricardo@correo.cl',
+                'password': 'ricardo',
+                'tipo_acceso': 'profesor'
+            },
+            {
+                'rut': '5',
+                'first_name': 'Mario',
+                'last_name': 'Castillo',
+                'email': 'mario@correo.cl',
+                'password': 'mario',
+                'tipo_acceso': 'profesor'
+            },
+            {
+                'rut': '6',
+                'first_name': 'Laura',
+                'last_name': 'Ortega',
+                'email': 'laura@correo.cl',
+                'password': 'laura',
+                'tipo_acceso': 'profesor'
+            },
+            {
+                'rut': '7',
+                'first_name': 'Eduardo',
+                'last_name': 'Morales',
+                'email': 'emorales@correo.cl',
+                'password': 'emorales',
+                'tipo_acceso': 'profesor'
+            },
+            {
+                'rut': '8',
+                'first_name': 'David',
+                'last_name': 'Rojas',
+                'email': 'david@correo.cl',
+                'password': 'david',
+                'tipo_acceso': 'profesor'
+            }
+        ]
+        
+        for user in users:
+            hashed_password = bcrypt.hashpw(user['password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+            new_user = CREDENCIAL(
+                rut=user['rut'],
+                first_name=user['first_name'],
+                last_name=user['last_name'],
+                email=user['email'],
+                password=hashed_password,
+                tipo_acceso=user['tipo_acceso'],
+                carrera=user.get('carrera')
+            )
+            db.session.add(new_user)
+            db.session.commit()
+
+
+
 
 def read_users_from_csv(file_path):
     users = []
@@ -18,8 +131,6 @@ def read_users_from_csv(file_path):
                 'carrera': row['carrera'] if row['carrera'] else None
             })
     return users
-
-
 
 def parse_courses_file(file_path):
     courses = []
@@ -45,6 +156,23 @@ def initialize_courses_and_careers(courses_data):
             db.session.add(carrera)
             db.session.commit()
         
+        teacher_name = course['profesor']
+        first_name, last_name = teacher_name.split(' ', 1)
+        teacher = Teacher.query.filter_by(first_name=first_name, last_name=last_name).first()
+        if not teacher:
+            credencial = CREDENCIAL.query.filter_by(first_name=first_name, last_name=last_name, tipo_acceso='profesor').first()
+            if not credencial:
+                print(f"Profesor {teacher_name} no encontrado en CREDENCIAL. Saltando curso {course['course_id']}")
+                continue
+            teacher = Teacher(
+                credencial_id=credencial.id,
+                first_name=first_name,
+                last_name=last_name,
+                rut=credencial.rut
+            )
+            db.session.add(teacher)
+            db.session.commit()
+        
         existing_course = Course.query.filter_by(sigla_curso=course['course_id']).first()
         if not existing_course:
             new_course = Course(
@@ -52,7 +180,7 @@ def initialize_courses_and_careers(courses_data):
                 name=course['name'],
                 carrera_id=carrera.id,
                 semestre=course['semestre'],
-                profesor=course['profesor']
+                teacher_id=teacher.id
             )
             db.session.add(new_course)
     db.session.commit()
@@ -108,7 +236,6 @@ def create_students_from_credencial():
         except Exception as e:
             print(f"Error al crear el estudiante con RUT {credencial.rut}: {e}")
     db.session.commit()
-
 
 def assign_courses_to_students():
     students = Student.query.all()

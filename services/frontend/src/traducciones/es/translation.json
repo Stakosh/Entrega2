@@ -66,9 +66,11 @@
   "intoleranciaLactosa": "Intolerancia a la Lactosa",
   "otra": "Otra",
   "encuestaAlimentaria": "Encuesta Alimentaria",
-  "verAsistencias": "View Attendance",
-  "leyenda": "Legend",
-  "inasistencia": "Absence",
-  "asistencia": "Attendance",
-  "noHayClases": "No classes yet"
+  "verAsistencias": "Ver Asistencias",
+  "leyenda": "Leyenda",
+  "inasistencia": "Inasistencia",
+  "asistencia": "Asistencia",
+  "noHayClases": "Aún no hay clases",
+  "justificationRequest": "Solicitud de Justificación"
+
 }

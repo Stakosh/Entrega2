@@ -11,7 +11,6 @@ import { LanguageProvider } from './LanguageContext';
 import Layout from './components/Layout';
 import Inicio from './components/Inicio';
 import Login from './components/Login';
-
 import VerAsistencias from './components/VerAsistencias';
 import MarcarAsistencia from './components/MarcarAsistencia';
 

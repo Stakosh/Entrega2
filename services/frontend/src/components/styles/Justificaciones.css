@@ -1,0 +1,46 @@
+.justificaciones-bg {
+    background-image: url('../../img/foto-fondo2.jpg');
+    background-size: cover;
+    background-position: center top;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.justificaciones-container {
+    margin-top: 60px;
+    margin-bottom: 60px;
+}
+
+.justificaciones-card {
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+}
+
+.justificaciones-step {
+    margin-bottom: 20px;
+}
+
+.justificaciones-selected {
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+.selected-asignatura {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.selected-asignatura .mr-2 {
+    margin-right: 10px;
+}
+
+.selected-asignatura .mb-2 {
+    margin-bottom: 10px;
+}
