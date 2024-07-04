@@ -10,7 +10,7 @@ def initialize_default_users():
                 'rut': '207231827',
                 'first_name': 'Javiera',
                 'last_name': 'Soto',
-                'email': 'jav.soto@alumnos.uai.cl',
+                'email': 'javi@correo.cl',
                 'password': 'queso',
                 'tipo_acceso': 'alumno',
                 'carrera': 'INFORMATICA'
