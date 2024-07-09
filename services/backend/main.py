@@ -153,7 +153,7 @@ def login():
         "user": {
             "id": user.id,
             "email": user.email,
-            "name": user.first_name + ' ' + user.last_name,
+            "name": user.first_name,
             "tipo_acceso": user.tipo_acceso
         },
         "student_data": student_data,

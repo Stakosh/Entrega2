@@ -11,6 +11,12 @@ function Inicio() {
     const navigate = useNavigate(); // Hook to enable navigation
     const { t } = useTranslation("global"); // Hook for translations
     const { currentUser } = useAuth(); // Obtén el rol del usuario
+    console.log("CurrentUser:", currentUser);
+    console.log("Tipo de acceso:", currentUser?.tipo_acceso);
+
+    if (!currentUser) {
+        console.log("No currentUser data available");
+    }
 
     return (
         <div>
@@ -28,7 +34,7 @@ function Inicio() {
             >
                 <Container>
                     <Row className="justify-content-center">
-                        {currentUser?.tipo_acceso === 'student' && (
+                        {currentUser?.tipo_acceso === 'alumno' && (
                             <>
                                 <Row xs="auto" className="justify-content-center">
                                     <Button
@@ -37,7 +43,7 @@ function Inicio() {
                                         style={{ width: '50%', padding: '10px', color: 'black', backgroundColor: 'whitesmoke' }}
                                         onClick={() => navigate('/justificaciones')}
                                     >
-                                        {t('justificaciones')}
+                                        {t('enviar-justificaciones')}
                                     </Button>
                                 </Row>
                                 <Row xs="auto" className="justify-content-center">
@@ -47,7 +53,7 @@ function Inicio() {
                                         style={{ width: '50%', padding: '10px', color: 'black', backgroundColor: 'whitesmoke' }}
                                         onClick={() => navigate('/proximos-cursos')}
                                     >
-                                        {t('proximosCursos')}
+                                        {t('ver-proximosCursos')}
                                     </Button>
                                 </Row>
                                 <Row xs="auto" className="justify-content-center">
@@ -56,12 +62,12 @@ function Inicio() {
                                         style={{ width: '50%', padding: '10px', color: 'black', backgroundColor: 'whitesmoke' }}
                                         onClick={() => navigate('/asistencias')}
                                     >
-                                        {t('asistencias')}
+                                        {t('ver-asistencias')}
                                     </Button>
                                 </Row>
                             </>
                         )}
-                        {currentUser?.tipo_acceso === 'teacher' && (
+                        {currentUser?.tipo_acceso === 'profesor' && (
                             <>
                                 <Row xs="auto" className="justify-content-center">
                                     <Button
@@ -77,7 +83,7 @@ function Inicio() {
                                     <Button
                                         variant="light"
                                         style={{ width: '50%', padding: '10px', color: 'black', backgroundColor: 'whitesmoke' }}
-                                        onClick={() => navigate('/ver-asistencia')}
+                                        onClick={() => navigate('/ver-asistencias')}
                                     >
                                         {t('verAsistencia')}
                                     </Button>
@@ -100,9 +106,9 @@ function Inicio() {
                                     <Button
                                         variant="light"
                                         style={{ width: '50%', padding: '10px', color: 'black', backgroundColor: 'whitesmoke' }}
-                                        onClick={() => navigate('/estadisticas')}
+                                        onClick={() => navigate('/Ver-Estadisticas')}
                                     >
-                                        {t('estadisticas')}
+                                        {t('VerEstadisticas')}
                                     </Button>
                                 </Row>
                             </>

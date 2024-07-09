@@ -71,5 +71,13 @@
   "inasistencia": "Absence",
   "asistencia": "Attendance",
   "noHayClases": "No classes yet",
-  "justificationRequest": "Justification Request"
+  "justificationRequest": "Justification Request",
+  "enviar-justificaciones": "Submit Justifications",
+  "ver-proximosCursos": "View Upcoming Courses",
+  "ver-asistencias": "View Attendances",
+  "obtenerQR": "Generate QR Code",
+  "verAsistencia": "View Attendance",
+  "resolucionJustificaciones": "Resolution of Justifications",
+  "VerEstadisticas": "View Statistics",
+  "inicio": "Home"
   }

@@ -11,7 +11,12 @@ export const AuthProvider = ({ children }) => {
 
     const login = (user, studentInfo = null, teacherInfo = null, adminInfo = null) => {
         setIsAuthenticated(true);
-        setCurrentUser(user);
+        setCurrentUser({
+            ...user,
+            name: user.name,  //  campo 'name'
+            tipo_acceso: user.tipo_acceso  // campo 'tipo_acceso'
+        });
+        //setCurrentUser(user);
         setStudentData(studentInfo);
         setTeacherData(teacherInfo);
         setAdminData(adminInfo);

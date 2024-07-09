@@ -13,6 +13,9 @@ import Inicio from './components/Inicio';
 import Login from './components/Login';
 import VerAsistencias from './components/VerAsistencias';
 import MarcarAsistencia from './components/MarcarAsistencia';
+import ObtenerQR from './components/ObtenerQR';
+import VerEstadisticas from './components/VerEstadisticas';
+import ResolucionJustificaciones from './components/ResolucionJustificaciones';
 
 
 
@@ -29,10 +32,13 @@ const App = () => {
                             <Route path="/forgot-password" element={<ForgotPassword />} />
                             <Route path="/inicio" element={<ProtectedRoute component={Inicio} />} />
                             <Route path="/asistencias" element={<ProtectedRoute component={Asistencias} />} />
-                            <Route path="/ver-asistencias" element={<ProtectedRoute component={VerAsistencias} />} />
-                            <Route path="/marcar-asistencia" element={<ProtectedRoute component={MarcarAsistencia} />} />
                             <Route path="/justificaciones" element={<ProtectedRoute component={Justificaciones} />} />
                             <Route path="/proximos-cursos" element={<ProtectedRoute component={ProximosCursos} />} />
+                            <Route path="/ver-asistencias" element={<ProtectedRoute component={VerAsistencias} />} />
+                            <Route path="/marcar-asistencia" element={<ProtectedRoute component={MarcarAsistencia} />} />
+                            <Route path="/obtener-qr" element={<ProtectedRoute component={ObtenerQR} />} />
+                            <Route path="/Ver-Estadisticas" element={<ProtectedRoute component={VerEstadisticas} />} />
+                            <Route path="/resolucion-justificaciones" element={<ProtectedRoute component={ResolucionJustificaciones} />} />
                         </Routes>
                     </Layout>
                 </Router>

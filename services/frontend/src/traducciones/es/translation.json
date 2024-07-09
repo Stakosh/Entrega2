@@ -71,6 +71,14 @@
   "inasistencia": "Inasistencia",
   "asistencia": "Asistencia",
   "noHayClases": "Aún no hay clases",
-  "justificationRequest": "Solicitud de Justificación"
+  "justificationRequest": "Solicitud de Justificación",
+  "enviar-justificaciones": "Enviar Justificaciones",
+  "ver-proximosCursos": "Ver Próximos Cursos",
+  "ver-asistencias": "Ver Asistencias",
+  "obtenerQR": "Obtener QR",
+  "verAsistencia": "Ver Asistencia",
+  "resolucionJustificaciones": "Resolución de Justificaciones",
+  "VerEstadisticas": "Ver Estadísticas",
+  "inicio": "Inicio"
 
 }
