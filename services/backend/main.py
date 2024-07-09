@@ -4,6 +4,7 @@ from flask import request, jsonify, Flask
 from werkzeug.utils import secure_filename
 from app2.config import DevelopmentConfig
 
+from flask_jwt_extended import  jwt_required
 from flask.cli import FlaskGroup
 from flask_cors import CORS
 
@@ -389,28 +390,23 @@ def create_justificacion():
     return jsonify(new_justificacion.to_json()), 201
 ######################## RUTAS ASISTENCIA ####################################################################################
 
-# Namespace for Attendance
-attendance_ns = Namespace('attendance', description='Attendance operations')
+@app.route('/api/attendances', methods=['GET'])
+@jwt_required()
+def get_attendances():
+    current_user_id = get_jwt_identity()  # Asumiendo que el ID del usuario se guarda en el token JWT
+    student = Student.query.filter_by(credencial_id=current_user_id).first()
 
-# Model for marking attendance
-attendance_model = attendance_ns.model('Attendance', {
-    'rut': fields.String(required=True, description='RUT of the student'),
-    'course_id': fields.Integer(required=True, description='Course ID'),
-    'date': fields.Date(required=True, description='Date of attendance'),
-    'present': fields.Boolean(required=True, description='Presence status')
-})
+    if not student:
+        return jsonify({'message': 'Student not found'}), 404
 
+    enrollments = Enrollment.query.filter_by(student_id=student.id).all()
+    attendances = []
+    for enrollment in enrollments:
+        attendance_records = Attendance.query.filter_by(enrollment_id=enrollment.id).all()
+        for record in attendance_records:
+            attendances.append(record.to_json())
 
-@app.route('/api/estudiante/<int:student_id>/asistencia', methods=['GET'])
-def get_asistencia_estudiante(student_id):
-    asistencia = db.session.query(Attendance).join(Enrollment).filter(
-        Enrollment.student_id == student_id,
-        Attendance.enrollment_id == Enrollment.id
-    ).all()
-    
-    asistencia_json = [registro.to_json() for registro in asistencia]
-    return jsonify(asistencia_json)
-
+    return jsonify(attendances), 200
 
 
 
