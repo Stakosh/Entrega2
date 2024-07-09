@@ -96,6 +96,14 @@ def initialize_default_users():
                 'email': 'david@correo.cl',
                 'password': 'david',
                 'tipo_acceso': 'profesor'
+            },
+            {
+                'rut': '465977649',
+                'first_name': 'Tamara',
+                'last_name': 'Dinamarca',
+                'email': 'doritosazules123@gmail.cl',
+                'password': 'dorito',
+                'tipo_acceso': 'admin'
             }
         ]
         

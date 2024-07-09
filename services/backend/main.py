@@ -342,11 +342,12 @@ def get_asignaturas_estudiante(student_id):
 # API Endpoint para enviar justificaciones
 @app.route('/api/justificacion', methods=['POST'])
 def create_justificacion():
-    data = request.form  # Cambiamos a request.form para manejar FormData
+    data = request.form  # Utiliza request.form para manejar datos que incluyan archivos
     student_id = data.get('student_id')
     fecha_desde = data.get('fechaDesde')
     fecha_hasta = data.get('fechaHasta')
     razones = data.get('razones')
+    initial_status = 'pendiente'  # Estado inicial de la justificación
 
     if not student_id or not fecha_desde or not fecha_hasta or not razones:
         return jsonify({'error': 'Missing required fields'}), 400
@@ -378,7 +379,8 @@ def create_justificacion():
         fecha_desde=fecha_desde,
         fecha_hasta=fecha_hasta,
         razones=razones,
-        archivos=",".join(archivos)
+        archivos=",".join(archivos),
+        status=initial_status  # Añadir el estado inicial
     )
     
     # Añadir asignaturas a la justificación
@@ -388,6 +390,8 @@ def create_justificacion():
     db.session.commit()
 
     return jsonify(new_justificacion.to_json()), 201
+
+
 ######################## RUTAS ASISTENCIA ####################################################################################
 
 @app.route('/api/attendances', methods=['GET'])
@@ -410,8 +414,80 @@ def get_attendances():
 
 
 
+@app.route('/register_attendance', methods=['POST'])
+@jwt_required()
+def register_attendance():
+    data = request.get_json()
+    student_id = data['student_id']
+    course_id = data['course_id']
+    date = data['date']
+    status = data['status']
+
+    # Verifica la existencia del estudiante y el curso
+    student = Student.query.get(student_id)
+    course = Course.query.get(course_id)
+    if not student or not course:
+        return jsonify({'message': 'Student or course not found'}), 404
+
+    # Verifica la inscripción
+    enrollment = Enrollment.query.filter_by(student_id=student_id, course_id=course_id).first()
+    if not enrollment:
+        return jsonify({'message': 'Enrollment does not exist'}), 404
+
+    # Registra o actualiza la asistencia
+    attendance = Attendance.query.filter_by(enrollment_id=enrollment.id, date=date).first()
+    if attendance:
+        attendance.status = status
+    else:
+        attendance = Attendance(enrollment_id=enrollment.id, date=date, status=status)
+        db.session.add(attendance)
+
+    db.session.commit()
+    return jsonify({'message': 'Attendance registered successfully'}), 200
 
 
+
+
+
+
+
+
+############################## RUTAS ADMIN ###############################################################################################################################################
+
+
+@app.route('/api/justificaciones/pendientes', methods=['GET'])
+def get_justificaciones_pendientes():
+    try:
+        # Supongamos que Justificacion es tu modelo de SQLAlchemy
+        pendientes = Justificacion.query.filter_by(status='pendiente').all()
+        return jsonify([justificacion.to_json() for justificacion in pendientes]), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+
+@app.route('/api/justificacion/<int:id>/aprobar', methods=['PATCH'])
+def aprobar_justificacion(id):
+    justificacion = Justificacion.query.get(id)
+    if justificacion:
+        justificacion.status = 'aprobada'
+        db.session.commit()
+        return jsonify({'message': 'Justificación aprobada'}), 200
+    else:
+        return jsonify({'message': 'Justificación no encontrada'}), 404
+
+
+
+@app.route('/api/justificacion/<int:id>/rechazar', methods=['PATCH'])
+def rechazar_justificacion(id):
+    justificacion = Justificacion.query.get(id)
+    if justificacion:
+        justificacion.status = 'rechazada'
+        db.session.commit()
+        return jsonify({'message': 'Justificación rechazada'}), 200
+    else:
+        return jsonify({'message': 'Justificación no encontrada'}), 404
+    
 
 
 

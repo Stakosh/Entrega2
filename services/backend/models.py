@@ -1,6 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Enum, Date, Integer, String, Boolean
-
+from sqlalchemy import Enum, Date, Integer, String, Boolean, Column
 db = SQLAlchemy()
 
 class CREDENCIAL(db.Model):
@@ -147,14 +146,16 @@ justificacion_asignaturas = db.Table('justificacion_asignaturas',
 
 
 class Justificacion(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False)
-    fecha_desde = db.Column(db.Date, nullable=False)
-    fecha_hasta = db.Column(db.Date, nullable=False)
-    razones = db.Column(db.String(500), nullable=False)
-    archivos = db.Column(db.String(200))  # Assuming you store file paths
+    id = Column(Integer, primary_key=True)
+    student_id = Column(Integer, db.ForeignKey('student.id'), nullable=False)
+    fecha_desde = Column(Date, nullable=False)
+    fecha_hasta = Column(Date, nullable=False)
+    razones = Column(String(500), nullable=False)
+    archivos = Column(String(200))  # Assuming you store file paths
     # Añadir relación many-to-many con asignaturas
     asignaturas = db.relationship('Course', secondary='justificacion_asignaturas', backref=db.backref('justificaciones', lazy=True))
+    # Añadir el campo status con los valores enum y un valor por defecto
+    status = Column(Enum('pendiente', 'aprobada', 'rechazada', name='status_types'), default='pendiente', nullable=False)
 
     def to_json(self):
         return {
@@ -164,6 +165,7 @@ class Justificacion(db.Model):
             "fecha_hasta": self.fecha_hasta.strftime('%Y-%m-%d'),
             "razones": self.razones,
             "archivos": self.archivos,
+            "status": self.status,
             "asignaturas": [asignatura.name for asignatura in self.asignaturas]
         }
 
