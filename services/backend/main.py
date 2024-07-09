@@ -287,6 +287,22 @@ def get_horario_estudiante(student_id):
     return jsonify(horario_json)
 
 
+@app.route('/api/estudiante/<int:student_id>/info', methods=['GET'])
+def get_student_info(student_id):
+    # Buscar al estudiante por su ID
+    student = Student.query.get(student_id)
+    
+    # Comprobar si el estudiante existe
+    if not student:
+        return jsonify({'error': 'Estudiante no encontrado'}), 404
+
+    # Preparar los datos para la respuesta
+    student_info = {
+        'nombre_completo': f"{student.first_name} {student.last_name}",
+        'carrera': student.carrera
+    }
+
+    return jsonify(student_info), 200
 
 ######################## RUTAS CURSOS ####################################################################################
 

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios'; // Axios for API requests
-import { Container, Table, Button } from 'react-bootstrap'; // Bootstrap components
-import { useTranslation } from 'react-i18next'; // Translation hook
-import { Navigate } from 'react-router-dom'; // Router component for redirection
-import { useAuth } from './AuthContext'; // Auth context for authentication state
+import axios from 'axios';
+import { Container, Table, Button } from 'react-bootstrap';
+import { useTranslation } from 'react-i18next';
+import { Navigate } from 'react-router-dom';
+import { useAuth } from './AuthContext';
 
 function ResolucionJustificaciones() {
     const { t } = useTranslation("global");
@@ -14,10 +14,12 @@ function ResolucionJustificaciones() {
         const fetchJustificaciones = async () => {
             try {
                 const response = await axios.get('http://localhost:5000/api/justificaciones/pendientes');
-                if (response.data) {
-                    console.log("Justificaciones:", response.data); // Depurar la respuesta
-                    setJustificaciones(response.data);
-                }
+                const justificacionesData = response.data;
+                const justificacionesConNombres = await Promise.all(justificacionesData.map(async (justificacion) => {
+                    const res = await axios.get(`http://localhost:5000/api/estudiante/${justificacion.student_id}/info`);
+                    return {...justificacion, student_name: res.data.nombre_completo};
+                }));
+                setJustificaciones(justificacionesConNombres);
             } catch (error) {
                 console.error('Error fetching justifications:', error);
             }
@@ -66,19 +68,23 @@ function ResolucionJustificaciones() {
                         <th>{t('dateRange')}</th>
                         <th>{t('reasons')}</th>
                         <th>{t('attachments')}</th>
+                        <th>{t('subjects')}</th>
                         <th>{t('actions')}</th>
                     </tr>
                 </thead>
                 <tbody>
                     {justificaciones.map(justificacion => (
                         <tr key={justificacion.id}>
-                            <td>{justificacion.student?.first_name} {justificacion.student?.last_name}</td>
+                            <td>{justificacion.student_name}</td>
                             <td>{justificacion.fecha_desde} - {justificacion.fecha_hasta}</td>
                             <td>{justificacion.razones}</td>
                             <td>
-                                {justificacion.archivos && justificacion.archivos.split(',').map((archivo, index) => (
+                                {justificacion.archivos.split(',').map((archivo, index) => (
                                     <a key={index} href={`http://localhost:5000/uploads/${archivo}`} download>{archivo}</a>
                                 ))}
+                            </td>
+                            <td>
+                                {justificacion.asignaturas.join(', ')}
                             </td>
                             <td>
                                 <Button variant="success" onClick={() => handleAprobar(justificacion.id)}>{t('approve')}</Button>
