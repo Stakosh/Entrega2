@@ -16,7 +16,7 @@ function ResolucionJustificaciones() {
                 const response = await axios.get('http://localhost:5000/api/justificaciones/pendientes');
                 const justificacionesData = response.data;
                 const justificacionesConNombres = await Promise.all(justificacionesData.map(async (justificacion) => {
-                    const res = await axios.get(`http://localhost:5000/api/estudiante/${justificacion.student_id}/info`);
+                    const res = await axios.get(`http://localhost:5000/api/estudiante/${justificacion.student_id}/info/existencia`);
                     return {...justificacion, student_name: res.data.nombre_completo};
                 }));
                 setJustificaciones(justificacionesConNombres);

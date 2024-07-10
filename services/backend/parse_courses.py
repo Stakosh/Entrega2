@@ -245,7 +245,8 @@ def create_students_from_credencial():
                     first_name=credencial.first_name,
                     last_name=credencial.last_name,
                     carrera=credencial.carrera,
-                    semestre_que_cursa=4  # Ajuste según el requerimiento
+                    semestre_que_cursa=4,  # Ajuste según el requerimiento
+                    EncuestaAlimentaria=False  # Asegúrate de inicializar como False
                 )
                 print(f"El estudiante con RUT {credencial.rut} fue creado exitosamente.")
                 db.session.add(student)

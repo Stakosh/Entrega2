@@ -3,15 +3,16 @@ from flask_restx import Api, Resource, Namespace, fields
 from flask import request, jsonify, Flask
 from werkzeug.utils import secure_filename
 from app2.config import DevelopmentConfig
-
-from flask_jwt_extended import  jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask.cli import FlaskGroup
 from flask_cors import CORS
-
-from parse_courses import parse_courses_file, initialize_courses_and_careers, parse_schedules_file, initialize_schedules, create_students_from_credencial,assign_courses_to_students, initialize_default_users
+from parse_courses import (parse_courses_file, initialize_courses_and_careers, 
+                           parse_schedules_file, initialize_schedules, 
+                           create_students_from_credencial, assign_courses_to_students, 
+                           initialize_default_users)
 from extensions import db
 from models import *
-#enroll_students_in_courses,
+
 import bcrypt
 import jwt
 import os
@@ -24,36 +25,22 @@ app.config.from_object(DevelopmentConfig)
 db.init_app(app)
 
 # Configuración de CORS
-CORS(app, resources={r"/api/*": {
-    "origins": ["http://localhost:3000"],
-    "methods": ["GET", "POST", "PATCH", "DELETE"],
-    "allow_headers": ["Authorization", "Content-Type"],
-    "supports_credentials": True,
-    "max_age": 3600
-}})
-
+CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
 
 # Configuración de la carpeta de subida de archivos (justificaciones)
-UPLOAD_FOLDER = os.getenv('UPLOAD_FOLDER', 'uploads')  # Obtener de la variable de entorno o usar 'uploads' por defecto
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)  # Crear la carpeta si no existe
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER  # Configurar la carpeta de subidas en Flask
-
-
+UPLOAD_FOLDER = os.getenv('UPLOAD_FOLDER', 'uploads')
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Configuración de la API
 api = Api(app, version="1.0", title="APIs", doc="/docs/")
-
-
-# Setup CORS
-CORS(app)
-
 
 # Namespace para operaciones relacionadas con alumnos
 student_ns = Namespace('students', description='Operaciones relacionadas con alumnos')
 
 # Modelo para creación y actualización de alumnos
 student_model = student_ns.model('Student', {
-    'rut': fields.String(required=True, description='RUT del estudiante'),  # Cambiado a rut
+    'rut': fields.String(required=True, description='RUT del estudiante'),
     'first_name': fields.String(required=True, description='Nombre del estudiante'),
     'last_name': fields.String(required=True, description='Apellido del estudiante'),
     'email': fields.String(required=True, description='Correo electrónico del estudiante'),
@@ -61,9 +48,7 @@ student_model = student_ns.model('Student', {
     'tipo_acceso': fields.String(required=True, description='Tipo de acceso (admin, profesor, alumno)'),
 })
 
-
-
-##### Generación y verificación de tokens JWT ####
+# Generación y verificación de tokens JWT
 def generate_token(user_id):
     payload = {
         'exp': datetime.utcnow() + timedelta(days=1),
@@ -88,7 +73,10 @@ def token_required(f):
     decorator.__name__ = f.__name__
     return decorator
 
-######################## RUTAS USUARIO (generales) ###############################################################################################################################################
+######################## RUTAS USUARIO (generales) ################################################################################################
+
+
+
 
 # API Endpoint para ruta para login 
 @app.route('/api/login', methods=['POST', 'OPTIONS'])
@@ -162,9 +150,11 @@ def login():
         "admin_data": admin_data
     }), 200
 
+############## FIN LOGIN 
 
 
-# API Endpointcheck para tipo de acceso
+
+# API Endpoint para tipo de acceso
 @app.route('/api/check-access', methods=['POST'])
 def check_access():
     data = request.json
@@ -174,7 +164,6 @@ def check_access():
         return jsonify({'access_type': user.tipo_acceso}), 200
     else:
         return jsonify({'error': 'User not found'}), 404
-    
 
 
 
@@ -190,7 +179,7 @@ def validate_user():
         return jsonify({"message": "User validated successfully", "user_id": user.id}), 200
     else:
         return jsonify({"error": "Invalid name or RUT"}), 400
-    
+
 
 
 
@@ -209,7 +198,7 @@ def reset_password():
         return jsonify({"message": "Password reset successful"}), 200
     else:
         return jsonify({"error": "User not found"}), 400
-    
+
 
 
 
@@ -252,32 +241,36 @@ class CreateStudent(Resource):
     def validate_rut_format(self, rut):
         import re
         return bool(re.match(r"^\d{1,3}(?:\.\d{3})*-[\dkK]$", rut))
-    
-
-
-
-# API Endpoint para buscar un alumno 
-@student_ns.route('/buscar-alumno/<int:user_id>')
-class SearchStudent(Resource):
-    def get(self, user_id):
-        student = CREDENCIAL.query.get(user_id)
-        if not student:
-            return {"message": "User not found"}, 400
-        
-        return {
-            "rut": student.rut,
-            "first_name": student.first_name,
-            "last_name": student.last_name,
-            "email": student.email,
-            "tipo_acceso": student.tipo_acceso
-        }, 200
-    
 
 
 
 
 
-######################## RUTAS PROXIMOS CURSOS ###############################################################################################################################################
+######################## RUTAS PROXIMOS CURSOS ##########################################################################################################
+
+
+# API Endpoint para
+@app.route('/api/estudiante/<int:student_id>', methods=['GET'])
+def get_student_info(student_id):
+    student = Student.query.get(student_id)
+    if not student:
+        return jsonify({'error': 'Student not found'}), 404
+
+    # Simplified response
+    student_info = {
+        "id": student.id,
+        "first_name": student.first_name,
+        "last_name": student.last_name,
+        "carrera": student.carrera,
+        "semestre_que_cursa": student.semestre_que_cursa,
+        "EncuestaAlimentaria": student.EncuestaAlimentaria
+    }
+    return jsonify(student_info), 200
+
+
+
+
+
 
 # API Endpoint para inscribir a alumnos o profesores a cursos
 @student_ns.route('/enroll')
@@ -327,15 +320,22 @@ def set_dietary_restrictions(student_id):
         restriccion.otra = data['otra']  # Manejo de campo string
 
     db.session.add(restriccion)
+
+    # Actualización del estado de la encuesta en el modelo Student
+    student = Student.query.get(student_id)
+    if student:
+        student.EncuestaAlimentaria = True
+        db.session.add(student)
+
     db.session.commit()
 
     return jsonify({'message': 'Restricciones actualizadas'}), 200
 
 
-# API Endpoint para Horarios y Detalles de Asignaturas
-@app.route('/api/estudiante/<int:student_id>/horarios', methods=['GET'])
-def get_student_schedules(student_id):
-    # Verificar que el estudiante exista
+
+# API Endpoint para obtener los cursos inscritos
+@app.route('/api/estudiante/<int:student_id>/cursos', methods=['GET'])
+def get_student_courses(student_id):
     student = Student.query.get(student_id)
     if not student:
         return jsonify({'error': 'Estudiante no encontrado'}), 404
@@ -345,35 +345,84 @@ def get_student_schedules(student_id):
         Enrollment.student_id == student_id
     ).all()
 
-    # Para cada curso, obtener detalles adicionales como horarios y profesor
-    courses_details = []
-    for course in courses:
-        schedule = Schedule.query.filter_by(course_id=course.id).all()
-        teacher = Teacher.query.get(course.teacher_id)
-
-        # Asumiendo que el modelo Schedule tiene los campos 'dia', 'hora_inicio' y 'hora_fin'
-        schedules = [{
-            'dia': s.dia,
-            'hora_inicio': s.hora_inicio,
-            'hora_fin': s.hora_fin,
-            'sala': s.sala
-        } for s in schedule]
-
-        # Añadir los detalles al curso
-        course_info = course.to_json()
-        course_info['horario'] = schedules
-        course_info['profesor'] = {
-            'nombre': f"{teacher.first_name} {teacher.last_name}",
-            'email': teacher.credencial.email  # Asumiendo que 'credencial' es una relación en Teacher
+    courses_details = [{
+        "id": course.id,
+        "sigla_curso": course.sigla_curso,
+        "name": course.name,
+        "semestre": course.semestre,
+        "teacher": {
+            "nombre": f"{course.teacher.first_name} {course.teacher.last_name}",
+            "email": course.teacher.credencial.email
         }
+    } for course in courses]
 
-        courses_details.append(course_info)
-
-    return jsonify(courses_details)
-
+    return jsonify(courses_details), 200
 
 
-######################## RUTAS JUSTIFICACIONES ###############################################################################################################################################
+
+
+
+
+# API Endpoint para obtener los horarios de un curso específico
+@app.route('/api/curso/<int:course_id>/horarios', methods=['GET'])
+def get_course_schedules(course_id):
+    course = Course.query.get(course_id)
+    if not course:
+        return jsonify({'error': 'Curso no encontrado'}), 404
+
+    schedules = Schedule.query.filter_by(course_id=course_id).all()
+
+    schedules_details = [{
+        "dia": schedule.dia,
+        "hora_inicio": schedule.hora_inicio,
+        "hora_fin": schedule.hora_fin,
+        "sala": schedule.sala
+    } for schedule in schedules]
+
+    return jsonify(schedules_details), 200
+
+
+
+
+@app.route('/api/estudiante/<int:student_id>/confirmar-curso', methods=['POST'])
+def confirmar_curso(student_id):
+    data = request.get_json()
+    courseId = data.get('courseId')
+    modality = data.get('modality')
+
+    if not courseId or not modality:
+        return jsonify({'error': 'Missing required data'}), 400
+
+    date = datetime.utcnow().date()  # Use the current UTC date
+
+    enrollment = Enrollment.query.filter_by(student_id=student_id, course_id=courseId).first()
+    if not enrollment:
+        return jsonify({'error': 'Enrollment not found'}), 404
+
+    attendance = ClassAttendance.query.filter_by(enrollment_id=enrollment.id, date=date).first()
+    if attendance:
+        attendance.modalidad = modality
+        attendance.confirmed = True
+    else:
+        new_attendance = ClassAttendance(
+            enrollment_id=enrollment.id,
+            date=date,
+            modalidad=modality,
+            confirmed=True
+        )
+        db.session.add(new_attendance)
+
+    db.session.commit()
+    return jsonify({'message': 'Attendance confirmed successfully'}), 200
+
+
+
+
+
+######################## RUTAS JUSTIFICACIONES #########################################################################################################
+
+
+
 
 # API Endpoint para encontrar asignaturas del estudiante
 @app.route('/api/estudiante/<int:student_id>/asignaturas', methods=['GET'])
@@ -385,6 +434,8 @@ def get_asignaturas_estudiante(student_id):
     
     asignaturas_json = [asignatura.to_json() for asignatura in asignaturas]
     return jsonify(asignaturas_json)
+
+
 
 
 
@@ -441,8 +492,13 @@ def create_justificacion():
     return jsonify(new_justificacion.to_json()), 201
 
 
+
 ######################## RUTAS ASISTENCIAS ####################################################################################
 
+
+
+
+# API Endpoint para
 @app.route('/api/attendances', methods=['GET'])
 @jwt_required()
 def get_attendances():
@@ -463,6 +519,8 @@ def get_attendances():
 
 
 
+
+# API Endpoint para
 @app.route('/register_attendance', methods=['POST'])
 @jwt_required()
 def register_attendance():
@@ -495,17 +553,25 @@ def register_attendance():
     return jsonify({'message': 'Attendance registered successfully'}), 200
 
 
-############################# RUTAS PROFESORES ###########################################################################################################################################
+
+
+
+############################# RUTAS PROFESORES ########################################################################################################
 
 
 
 
 
-############################## RUTAS ADMIN ###############################################################################################################################################
 
-# dar nombre y apellido de estudiante
-@app.route('/api/estudiante/<int:student_id>/info', methods=['GET'])
-def get_student_info(student_id):
+############################## RUTAS ADMIN ############################################################################################################
+
+
+
+
+
+# # API Endpoint para dar nombre y apellido de estudiante
+@app.route('/api/estudiante/<int:student_id>/info/existencia', methods=['GET'])
+def get_student_info_2(student_id):
     # Buscar al estudiante por su ID
     student = Student.query.get(student_id)
     
@@ -522,7 +588,8 @@ def get_student_info(student_id):
     return jsonify(student_info), 200
 
 
-# buscar justificaciones pendientes
+
+# # API Endpoint para buscar justificaciones pendientes
 @app.route('/api/justificaciones/pendientes', methods=['GET'])
 def get_justificaciones_pendientes():
     try:
@@ -533,7 +600,9 @@ def get_justificaciones_pendientes():
         return jsonify({'error': str(e)}), 500
 
 
-# para aprobar justificaciones
+
+
+# # API Endpoint para para aprobar justificaciones
 @app.route('/api/justificacion/<int:id>/aprobar', methods=['PATCH'])
 def aprobar_justificacion(id):
     justificacion = Justificacion.query.get(id)
@@ -545,7 +614,9 @@ def aprobar_justificacion(id):
         return jsonify({'message': 'Justificación no encontrada'}), 404
 
 
-# para rechazar justificaciones
+
+
+# # API Endpoint para rechazar justificaciones
 @app.route('/api/justificacion/<int:id>/rechazar', methods=['PATCH'])
 def rechazar_justificacion(id):
     justificacion = Justificacion.query.get(id)
@@ -555,29 +626,23 @@ def rechazar_justificacion(id):
         return jsonify({'message': 'Justificación rechazada'}), 200
     else:
         return jsonify({'message': 'Justificación no encontrada'}), 404
-    
 
 
 
 
-
-
-
-################## ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
-
-# Create the database and tables if they don't exist
+# # # # # # # # # # # # # # # # # # # # # # # # # # Crear la base de datos y tablas si no existen# # # # # # # # # # # # # # # # # # # # # # # #
 with app.app_context():
     time.sleep(10)  # Espera para asegurarse de que la base de datos esté lista
     db.create_all()
-    print("se crearon modelos de la db")
+    print("Se crearon modelos de la db")
     initialize_default_users()
-    print("se crearon usuarios en CREDENCIAL")
+    print("Se crearon usuarios en CREDENCIAL")
     courses_data = parse_courses_file('/app/data/asignaturas.csv')
     initialize_courses_and_careers(courses_data)
-    print("se crearon carreras")
+    print("Se crearon carreras")
     schedules_data = parse_schedules_file('/app/data/horarios.csv')
     initialize_schedules(schedules_data)
-    print("se crearon horarios")
+    print("Se crearon horarios")
     create_students_from_credencial()
     assign_courses_to_students()
 

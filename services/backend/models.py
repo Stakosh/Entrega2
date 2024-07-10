@@ -47,6 +47,7 @@ class Student(db.Model):
     carrera = db.Column(db.String(100), nullable=False)
     semestre_que_cursa = db.Column(db.Integer, nullable=False)
     dietary_preferences = db.relationship('DietaryPreference', backref='student', lazy=True)
+    EncuestaAlimentaria = db.Column(db.Boolean, nullable=False, default=False)
 
     def to_json(self):
         return {
@@ -56,7 +57,8 @@ class Student(db.Model):
             "first_name": self.first_name,
             "last_name": self.last_name,
             "carrera": self.carrera,
-            "semestre_que_cursa": self.semestre_que_cursa
+            "semestre_que_cursa": self.semestre_que_cursa,
+            "EncuestaAlimentaria" : self.EncuestaAlimentaria
         }
     
 
@@ -235,3 +237,19 @@ class DietaryPreference(db.Model):
         }
 
 
+class ClassAttendance(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    enrollment_id = db.Column(db.Integer, db.ForeignKey('enrollment.id'), nullable=False)
+    date = db.Column(db.Date, nullable=False)  # La fecha de la clase específica
+    modalidad = db.Column(Enum('presencial', 'en_linea', name='modalidad_types'), nullable=False)  # Modalidad elegida para esa clase
+    confirmed = db.Column(db.Boolean, default=False, nullable=False)  # Si el estudiante ha confirmado su asistencia para esa clase
+    enrollment = db.relationship('Enrollment', backref=db.backref('class_attendances', lazy=True))
+
+    def to_json(self):
+        return {
+            "id": self.id,
+            "enrollment_id": self.enrollment_id,
+            "date": self.date.strftime('%Y-%m-%d'),
+            "modalidad": self.modalidad,
+            "confirmed": self.confirmed
+        }

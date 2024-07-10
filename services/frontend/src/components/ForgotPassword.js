@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Container, Button, Row, Col, Form } from 'react-bootstrap';
 import axios from 'axios';
-import ImgFondo from '../img/fondo-1.jpg';
+import ImgFondo from '../img/foto-fondo2.jpg';
 import { useTranslation } from 'react-i18next';
 
 function ForgotPassword() {
