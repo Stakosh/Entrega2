@@ -79,5 +79,21 @@
   "verAsistencia": "View Attendance",
   "resolucionJustificaciones": "Resolution of Justifications",
   "VerEstadisticas": "View Statistics",
-  "inicio": "Home"
+  "inicio": "Home",
+  "pendingJustifications": "Pending Justifications",
+  "student": "Student",
+  "reasons": "Reasons",
+  "attachments": "Attachments",
+  "subjects": "Subjects",
+  "actions": "Actions",
+  "approve": "Approve",
+  "reject": "Reject",
+  "noJustifications": "No pending justifications",
+  "celiaco": "Celiac",
+    "intolerante_lactosa": "Lactose Intolerant",
+    "diabetico_tipo1": "Diabetic Type 1",
+    "diabetico_tipo2": "Diabetic Type 2",
+    "alergico": "Allergic",
+    "vegetariano": "Vegetarian",
+    "vegano": "Vegan"
   }

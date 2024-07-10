@@ -46,6 +46,7 @@ class Student(db.Model):
     last_name = db.Column(db.String(100), nullable=False)
     carrera = db.Column(db.String(100), nullable=False)
     semestre_que_cursa = db.Column(db.Integer, nullable=False)
+    dietary_preferences = db.relationship('DietaryPreference', backref='student', lazy=True)
 
     def to_json(self):
         return {
@@ -59,6 +60,40 @@ class Student(db.Model):
         }
     
 
+class Teacher(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    credencial_id = db.Column(db.Integer, db.ForeignKey('CREDENCIAL.id'), nullable=False)
+    credencial = db.relationship('CREDENCIAL', backref=db.backref('teachers', lazy=True))
+    rut = db.Column(db.String(100), nullable=False)
+    first_name = db.Column(db.String(100), nullable=False)
+    last_name = db.Column(db.String(100), nullable=False)
+
+    def to_json(self):
+        return {
+            "id": self.id,
+            "credencial_id": self.credencial_id,
+            "rut": self.rut,
+            "first_name": self.first_name,
+            "last_name": self.last_name
+        }
+
+
+class Admin(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    credencial_id = db.Column(db.Integer, db.ForeignKey('CREDENCIAL.id'), nullable=False)
+    credencial = db.relationship('CREDENCIAL', backref=db.backref('admins', lazy=True))
+    rut = db.Column(db.String(100), nullable=False)
+    first_name = db.Column(db.String(100), nullable=False)
+    last_name = db.Column(db.String(100), nullable=False)
+
+    def to_json(self):
+        return {
+            "id": self.id,
+            "credencial_id": self.credencial_id,
+            "rut": self.rut,
+            "first_name": self.first_name,
+            "last_name": self.last_name
+        }
 
 
 class Course(db.Model):
@@ -106,6 +141,7 @@ class Schedule(db.Model):
             "sala": self.sala
         }
 
+
 class Enrollment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False)
@@ -121,6 +157,7 @@ class Enrollment(db.Model):
             "student": self.student.first_name + " " + self.student.last_name,
             "course": self.course.name
         }
+
 
 class Attendance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -139,10 +176,12 @@ class Attendance(db.Model):
             "course": self.enrollment.course.name
         }
 
+
 justificacion_asignaturas = db.Table('justificacion_asignaturas',
     db.Column('justificacion_id', db.Integer, db.ForeignKey('justificacion.id'), primary_key=True),
     db.Column('course_id', db.Integer, db.ForeignKey('course.id'), primary_key=True)
 )
+
 
 
 class Justificacion(db.Model):
@@ -172,53 +211,27 @@ class Justificacion(db.Model):
 
 
 
-
 class DietaryPreference(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False)
-    vegano = db.Column(Boolean, nullable=False, default=False)
-    celiaco = db.Column(Boolean, nullable=False, default=False)
-    student = db.relationship('Student', backref=db.backref('dietary_preferences', lazy=True))
+    vegano = db.Column(db.Boolean, nullable=False, default=False)
+    celiaco = db.Column(db.Boolean, nullable=False, default=False)
+    diabetico_tipo1 = db.Column(db.Boolean, nullable=False, default=False)
+    diabetico_tipo2 = db.Column(db.Boolean, nullable=False, default=False)
+    alergico = db.Column(db.Boolean, nullable=False, default=False)
+    vegetariano = db.Column(db.Boolean, nullable=False, default=False)
+    otra = db.Column(db.String, nullable=True)  # Campo para almacenar información adicional
 
     def to_json(self):
         return {
             "id": self.id,
-            "student_id": self.student_id,
             "vegano": self.vegano,
-            "celiaco": self.celiaco
-        }
-    
-
-class Teacher(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    credencial_id = db.Column(db.Integer, db.ForeignKey('CREDENCIAL.id'), nullable=False)
-    credencial = db.relationship('CREDENCIAL', backref=db.backref('teachers', lazy=True))
-    rut = db.Column(db.String(100), nullable=False)
-    first_name = db.Column(db.String(100), nullable=False)
-    last_name = db.Column(db.String(100), nullable=False)
-
-    def to_json(self):
-        return {
-            "id": self.id,
-            "credencial_id": self.credencial_id,
-            "rut": self.rut,
-            "first_name": self.first_name,
-            "last_name": self.last_name
+            "celiaco": self.celiaco,
+            "diabetico_tipo1": self.diabetico_tipo1,
+            "diabetico_tipo2": self.diabetico_tipo2,
+            "alergico": self.alergico,
+            "otra": self.otra,
+            "vegetariano": self.vegetariano
         }
 
-class Admin(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    credencial_id = db.Column(db.Integer, db.ForeignKey('CREDENCIAL.id'), nullable=False)
-    credencial = db.relationship('CREDENCIAL', backref=db.backref('admins', lazy=True))
-    rut = db.Column(db.String(100), nullable=False)
-    first_name = db.Column(db.String(100), nullable=False)
-    last_name = db.Column(db.String(100), nullable=False)
 
-    def to_json(self):
-        return {
-            "id": self.id,
-            "credencial_id": self.credencial_id,
-            "rut": self.rut,
-            "first_name": self.first_name,
-            "last_name": self.last_name
-        }

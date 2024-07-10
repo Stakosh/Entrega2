@@ -79,6 +79,21 @@
   "verAsistencia": "Ver Asistencia",
   "resolucionJustificaciones": "Resolución de Justificaciones",
   "VerEstadisticas": "Ver Estadísticas",
-  "inicio": "Inicio"
-
+  "inicio": "Inicio",
+  "pendingJustifications": "Justificaciones Pendientes",
+  "student": "Estudiante",
+  "reasons": "Motivos",
+  "attachments": "Adjuntos",
+  "subjects": "Asignaturas",
+  "actions": "Acciones",
+  "approve": "Aprobar",
+  "reject": "Rechazar",
+  "noJustifications": "No hay justificaciones pendientes",
+  "celiaco": "Celíaco",
+    "intolerante_lactosa": "Intolerante a la Lactosa",
+    "diabetico_tipo1": "Diabético tipo 1",
+    "diabetico_tipo2": "Diabético tipo 2",
+    "alergico": "Alérgico",
+    "vegetariano": "Vegetariano",
+    "vegano": "Vegano"
 }

@@ -22,10 +22,10 @@ COPY ./requirements.txt .
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
-ENV UPLOAD_FOLDER=/app/uploads
+#ENV UPLOAD_FOLDER=/app/uploads
 
 # Crear la carpeta de uploads
-RUN mkdir -p $UPLOAD_FOLDER && chmod 777 $UPLOAD_FOLDER
+#RUN mkdir -p $UPLOAD_FOLDER && chmod 777 $UPLOAD_FOLDER
 
 # add entrypoint.sh
 COPY ./entrypoint.sh /app/entrypoint.sh
