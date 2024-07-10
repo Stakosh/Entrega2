@@ -121,8 +121,6 @@ class Course(db.Model):
         }
     
 
-
-    
 class Schedule(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     course_id = db.Column(db.Integer, db.ForeignKey('course.id'), nullable=False)

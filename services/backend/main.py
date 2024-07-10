@@ -19,6 +19,10 @@ import os
 import time
 
 
+from sqlalchemy.exc import SQLAlchemyError
+
+
+
 
 
 
@@ -26,8 +30,6 @@ import time
 app = Flask(__name__)
 app.config.from_object(DevelopmentConfig)
 
-# Inicializa la extensión de base de datos
-db.init_app(app)
 
 # Configuración de CORS
 CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
@@ -254,7 +256,7 @@ class CreateStudent(Resource):
 ######################## RUTAS PROXIMOS CURSOS ##########################################################################################################
 
 
-# API Endpoint para
+# API Endpoint para obtener datos del alumno
 @app.route('/api/estudiante/<int:student_id>', methods=['GET'])
 def get_student_info(student_id):
     student = Student.query.get(student_id)
@@ -386,7 +388,7 @@ def get_course_schedules(course_id):
 
 
 
-
+# API Endpoint para confirmar modalidad a cursos
 @app.route('/api/estudiante/<int:student_id>/confirmar-curso', methods=['POST'])
 def confirmar_curso(student_id):
     data = request.get_json()
@@ -507,64 +509,90 @@ def create_justificacion():
 
 
 
+
+
+
+
 ######################## RUTAS ASISTENCIAS ####################################################################################
 
 
 
-
-# API Endpoint para
-@app.route('/api/attendances', methods=['GET'])
-@jwt_required()
-def get_attendances():
-    current_user_id = get_jwt_identity()  # Asumiendo que el ID del usuario se guarda en el token JWT
-    student = Student.query.filter_by(credencial_id=current_user_id).first()
-
-    if not student:
-        return jsonify({'message': 'Student not found'}), 404
-
-    enrollments = Enrollment.query.filter_by(student_id=student.id).all()
-    attendances = []
-    for enrollment in enrollments:
-        attendance_records = Attendance.query.filter_by(enrollment_id=enrollment.id).all()
-        for record in attendance_records:
-            attendances.append(record.to_json())
-
-    return jsonify(attendances), 200
-
-
-
-
-# API Endpoint para
-@app.route('/register_attendance', methods=['POST'])
-@jwt_required()
+# API Endpoint para registrar asistencia
+@app.route('/api/attendances', methods=['POST'])
 def register_attendance():
-    data = request.get_json()
-    student_id = data['student_id']
-    course_id = data['course_id']
-    date = data['date']
-    status = data['status']
+    try:
+        data = request.json
+        student_id = data.get('student_id')
+        course_id = data.get('course_id')
+        status = data.get('status', 'present')
+        date = datetime.strptime(data.get('date'), '%Y-%m-%d').date()
 
-    # Verifica la existencia del estudiante y el curso
-    student = Student.query.get(student_id)
-    course = Course.query.get(course_id)
-    if not student or not course:
-        return jsonify({'message': 'Student or course not found'}), 404
+        # Find the enrollment
+        enrollment = Enrollment.query.filter_by(student_id=student_id, course_id=course_id).first()
+        if not enrollment:
+            return jsonify({'error': 'Enrollment not found'}), 404
 
-    # Verifica la inscripción
-    enrollment = Enrollment.query.filter_by(student_id=student_id, course_id=course_id).first()
-    if not enrollment:
-        return jsonify({'message': 'Enrollment does not exist'}), 404
-
-    # Registra o actualiza la asistencia
-    attendance = Attendance.query.filter_by(enrollment_id=enrollment.id, date=date).first()
-    if attendance:
-        attendance.status = status
-    else:
-        attendance = Attendance(enrollment_id=enrollment.id, date=date, status=status)
+        # Create and save the attendance record
+        attendance = Attendance(
+            enrollment_id=enrollment.id,
+            date=date,
+            status=status
+        )
         db.session.add(attendance)
+        db.session.commit()
+        
+        return jsonify({'message': 'Attendance registered successfully'}), 201
 
-    db.session.commit()
-    return jsonify({'message': 'Attendance registered successfully'}), 200
+    except SQLAlchemyError as e:
+        return jsonify({'error': 'Database error', 'details': str(e)}), 500
+
+    except Exception as e:
+        return jsonify({'error': 'Internal server error', 'details': str(e)}), 500
+
+
+# API Endpoint para obtener asistencias del estudiante
+@app.route('/api/students/<int:student_id>/attendances', methods=['GET'])
+def get_student_attendances(student_id):
+    try:
+        student = Student.query.get(student_id)
+        if not student:
+            return jsonify({'error': 'Student not found'}), 404
+
+        attendances = Attendance.query.join(Enrollment).filter(Enrollment.student_id == student_id).all()
+        attendance_data = [attendance.to_json() for attendance in attendances]
+
+        return jsonify(attendance_data), 200
+
+    except SQLAlchemyError as e:
+        return jsonify({'error': 'Database error', 'details': str(e)}), 500
+
+    except Exception as e:
+        return jsonify({'error': 'Internal server error', 'details': str(e)}), 500
+    
+
+
+# API Endpoint para obtener asistencia del alumno a x curso
+@app.route('/api/courses/<int:course_id>/attendances', methods=['GET'])
+def get_course_attendances(course_id):
+    try:
+        # Obtener todas las asistencias para el curso en el semestre (marzo a julio)
+        start_date = datetime(datetime.now().year, 3, 1)
+        end_date = datetime(datetime.now().year, 7, 31)
+        attendances = Attendance.query.join(Enrollment).filter(
+            Enrollment.course_id == course_id,
+            Attendance.date >= start_date,
+            Attendance.date <= end_date
+        ).all()
+        attendance_data = [attendance.to_json() for attendance in attendances]
+        return jsonify(attendance_data), 200
+
+    except SQLAlchemyError as e:
+        return jsonify({'error': 'Database error', 'details': str(e)}), 500
+
+    except Exception as e:
+        return jsonify({'error': 'Internal server error', 'details': str(e)}), 500
+
+
 
 
 
@@ -574,7 +602,33 @@ def register_attendance():
 
 
 
+# API Endpoint para obtener cursos que dicta el profesor
+@app.route('/api/professors/<int:profesor_id>/cursos', methods=['GET'])
+def get_professor_courses(profesor_id):
+    try:
+        # Verificar si el profesor existe
+        professor = Teacher.query.get(profesor_id)
+        if not professor:
+            return jsonify({'error': 'Profesor no encontrado'}), 404
 
+        # Obtener los cursos que dicta el profesor
+        courses = Course.query.filter_by(teacher_id=profesor_id).all()
+
+        if not courses:
+            return jsonify({'message': 'No hay cursos asociados a este profesor'}), 200
+
+        # Filtrar y solo devolver sigla_curso y name
+        course_data = [{"sigla_curso": course.sigla_curso, "name": course.name} for course in courses]
+
+        return jsonify(course_data), 200
+
+    except SQLAlchemyError as e:
+        # Manejar errores de la base de datos
+        return jsonify({'error': 'Error en la base de datos', 'details': str(e)}), 500
+
+    except Exception as e:
+        # Manejar excepciones generales
+        return jsonify({'error': 'Error interno del servidor', 'details': str(e)}), 500
 
 
 ############################## RUTAS ADMIN ############################################################################################################
@@ -645,6 +699,9 @@ def rechazar_justificacion(id):
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # Crear la base de datos y tablas si no existen# # # # # # # # # # # # # # # # # # # # # # # #
+# Inicializa la extensión de base de datos
+db.init_app(app)
+
 with app.app_context():
     time.sleep(10)  # Espera para asegurarse de que la base de datos esté lista
     db.create_all()

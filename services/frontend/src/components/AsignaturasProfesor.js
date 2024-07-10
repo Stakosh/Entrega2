@@ -1,0 +1,108 @@
+import React, { useEffect, useState } from 'react';
+import {  Container, Button, Row, Col, Spinner, Form, Alert } from 'react-bootstrap';
+import { useTranslation } from 'react-i18next';
+import { QRCodeCanvas as QRCode } from 'qrcode.react';
+import { useAuth } from './AuthContext';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+
+function AsignaturasProfesor() {
+    const { t } = useTranslation("global");
+    const { currentUser } = useAuth();
+    const [cursos, setCursos] = useState([]);
+    const [selectedCurso, setSelectedCurso] = useState('');
+    const [qrValue, setQrValue] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        if (currentUser && currentUser.id) {
+            console.log("Fetching professor courses...");
+            axios.get(`http://localhost:5000/api/professors/${currentUser.id}/cursos`)
+                .then(response => {
+                    const courses = response.data;
+                    console.log("Courses fetched:", courses);
+                    setCursos(courses);
+                    setLoading(false);
+                })
+                .catch(error => {
+                    console.error('Error fetching professor courses:', error);
+                    setError('Error fetching professor courses. Please try again later.');
+                    setLoading(false);
+                });
+        } else {
+            setError('No current user or user ID found.');
+            setLoading(false);
+        }
+    }, [currentUser]);
+
+    const handleCourseChange = (event) => {
+        setSelectedCurso(event.target.value);
+        console.log('Selected course ID:', event.target.value);
+    };
+
+    const generateQRCode = () => {
+        try {
+            const qrUrl = `http://localhost:3000/marcar-asistencia?courseId=${selectedCurso}&date=${new Date().toISOString()}`;
+            console.log('Generating QR for URL:', qrUrl);
+            setQrValue(qrUrl);
+        } catch (error) {
+            console.error('Error generating QR code:', error);
+            setError('Error generating QR code. Please try again later.');
+        }
+    };
+
+    if (loading) {
+        return (
+            <Container className="mt-4">
+                <Row className="justify-content-md-center">
+                    <Col xs={12} className="text-center">
+                        <Spinner animation="border" />
+                        <p>{t('Cargando cursos...')}</p>
+                    </Col>
+                </Row>
+            </Container>
+        );
+    }
+
+    return (
+        <Container className="mt-4">
+            {error && (
+                <Row className="justify-content-md-center">
+                    <Col xs={12} md={6}>
+                        <Alert variant="danger" onClose={() => setError(null)} dismissible>
+                            {error}
+                        </Alert>
+                    </Col>
+                </Row>
+            )}
+            <Row className="justify-content-md-center">
+                <Col xs={12} md={6}>
+                    <Form.Group>
+                        <Form.Label>Seleccione el curso</Form.Label>
+                        <Form.Control as="select" value={selectedCurso} onChange={handleCourseChange}>
+                            <option value="">Seleccione un curso</option>
+                            {cursos.map(course => (
+                                <option key={course.sigla_curso} value={course.sigla_curso}>
+                                    {course.name}
+                                </option>
+                            ))}
+                        </Form.Control>
+                    </Form.Group>
+                    <Button variant="outline-secondary" onClick={generateQRCode} disabled={!selectedCurso}>
+                        Generar QR
+                    </Button>
+                </Col>
+            </Row>
+            <Row className="justify-content-md-center">
+                <Col xs={12} md={6} className="text-center">
+                    {qrValue && (
+                        <QRCode value={qrValue} size={256} level={"H"} includeMargin={true} />
+                    )}
+                </Col>
+            </Row>
+        </Container>
+    );
+}
+
+export default AsignaturasProfesor;

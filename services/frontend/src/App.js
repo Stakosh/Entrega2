@@ -13,7 +13,7 @@ import Inicio from './components/Inicio';
 import Login from './components/Login';
 import VerAsistencias from './components/VerAsistencias';
 import MarcarAsistencia from './components/MarcarAsistencia';
-import ObtenerQR from './components/ObtenerQR';
+import ObtenerQR from './components/AsignaturasProfesor';
 import VerEstadisticas from './components/VerEstadisticas';
 import ResolucionJustificaciones from './components/ResolucionJustificaciones';
 
