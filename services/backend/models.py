@@ -241,7 +241,7 @@ class ClassAttendance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     enrollment_id = db.Column(db.Integer, db.ForeignKey('enrollment.id'), nullable=False)
     date = db.Column(db.Date, nullable=False)  # La fecha de la clase específica
-    modalidad = db.Column(Enum('presencial', 'en_linea', name='modalidad_types'), nullable=False)  # Modalidad elegida para esa clase
+    modalidad = db.Column(Enum('presencial', 'online', name='modalidad_types'), nullable=False)  # Modalidad elegida para esa clase
     confirmed = db.Column(db.Boolean, default=False, nullable=False)  # Si el estudiante ha confirmado su asistencia para esa clase
     enrollment = db.relationship('Enrollment', backref=db.backref('class_attendances', lazy=True))
 

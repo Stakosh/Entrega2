@@ -45,7 +45,6 @@ function ProximosCursos() {
         return axios.get(`http://localhost:5000/api/curso/${courseId}/horarios`)
             .then(response => {
                 const horarios = response.data;
-                // Filtrar duplicados
                 const horariosUnicos = horarios.reduce((acc, current) => {
                     const x = acc.find(item => item.dia === current.dia && item.hora_inicio === current.hora_inicio && item.hora_fin === current.hora_fin && item.sala === current.sala);
                     if (!x) {
@@ -69,6 +68,7 @@ function ProximosCursos() {
         const horarios = await fetchHorarios(curso.id);
         if (selectedCurso?.id !== curso.id) {
             setSelectedCurso({ ...curso, horarios });
+            setModalidad(null); // Reset modalidad when a new course is selected
             console.log("Selected course with schedules:", { ...curso, horarios });
         }
     };

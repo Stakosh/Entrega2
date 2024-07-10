@@ -429,17 +429,12 @@ def confirmar_curso(student_id):
 # API Endpoint para encontrar asignaturas del estudiante
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
-    # Ensure the filename does not contain unsafe characters
     if '..' in filename or filename.startswith('.'):
         abort(400, "Invalid path.")
-    # Build the complete file path
     safe_path = safe_join(app.config['UPLOAD_FOLDER'], filename)
-    # Check if file exists
     if not os.path.isfile(safe_path):
         abort(404, "File not found.")
-    # Send file from the directory
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
-
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=True)
 
 
 
