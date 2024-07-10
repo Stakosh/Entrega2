@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from flask_restx import Api, Resource, Namespace, fields
-from flask import request, jsonify, Flask
-from werkzeug.utils import secure_filename
+from flask import request, jsonify, Flask, send_from_directory, abort
+from werkzeug.utils import secure_filename, safe_join
 from app2.config import DevelopmentConfig
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask.cli import FlaskGroup
@@ -18,6 +18,11 @@ import jwt
 import os
 import time
 
+
+
+
+
+
 app = Flask(__name__)
 app.config.from_object(DevelopmentConfig)
 
@@ -27,10 +32,10 @@ db.init_app(app)
 # Configuración de CORS
 CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
 
-# Configuración de la carpeta de subida de archivos (justificaciones)
-UPLOAD_FOLDER = os.getenv('UPLOAD_FOLDER', 'uploads')
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+# Set UPLOAD_FOLDER from environment variable or use default
+UPLOAD_FOLDER = os.getenv('UPLOAD_FOLDER', '/app/uploads')
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)  # Ensure directory exists
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER  # Set configuration in Flask
 
 # Configuración de la API
 api = Api(app, version="1.0", title="APIs", doc="/docs/")
@@ -271,7 +276,6 @@ def get_student_info(student_id):
 
 
 
-
 # API Endpoint para inscribir a alumnos o profesores a cursos
 @student_ns.route('/enroll')
 class EnrollCourse(Resource):
@@ -362,7 +366,6 @@ def get_student_courses(student_id):
 
 
 
-
 # API Endpoint para obtener los horarios de un curso específico
 @app.route('/api/curso/<int:course_id>/horarios', methods=['GET'])
 def get_course_schedules(course_id):
@@ -420,6 +423,22 @@ def confirmar_curso(student_id):
 
 
 ######################## RUTAS JUSTIFICACIONES #########################################################################################################
+
+
+
+# API Endpoint para encontrar asignaturas del estudiante
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    # Ensure the filename does not contain unsafe characters
+    if '..' in filename or filename.startswith('.'):
+        abort(400, "Invalid path.")
+    # Build the complete file path
+    safe_path = safe_join(app.config['UPLOAD_FOLDER'], filename)
+    # Check if file exists
+    if not os.path.isfile(safe_path):
+        abort(404, "File not found.")
+    # Send file from the directory
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 
 
