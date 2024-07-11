@@ -13,6 +13,7 @@ function MarcarAsistencia() {
     const [link, setLink] = useState("");
     const [loading, setLoading] = useState(true);
     const [isValid, setIsValid] = useState(null);
+    const [isClassDay, setIsClassDay] = useState(null);
 
     useEffect(() => {
         axios.get(`http://localhost:5000/api/estudiante/${currentUser.id}/cursos`)
@@ -28,21 +29,32 @@ function MarcarAsistencia() {
 
     const verificarInformacion = async () => {
         const date = new Date().toISOString().split('T')[0];
+        const dayOfWeek = new Date().toLocaleDateString('en-US', { weekday: 'long' }); // Obtener el día de la semana en inglés
         const courseSigla = selectedCurso.sigla_curso;
-    
-        console.log(`Verifying - Course Sigla: ${courseSigla}, Link: ${link}, Date: ${date}`);
+
         try {
+            // Verificar si hoy es un día de clase
+            const scheduleResponse = await axios.get(`http://localhost:5000/api/curso/${selectedCurso.id}/horarios`);
+            const schedules = scheduleResponse.data;
+            const classDays = schedules.map(schedule => schedule.dia);
+
+            if (!classDays.includes(dayOfWeek)) {
+                setIsClassDay(false);
+                return;
+            }
+
+            setIsClassDay(true);
+
+            console.log(`Verifying - Course Sigla: ${courseSigla}, Link: ${link}, Date: ${date}`);
             const response = await axios.post(`http://localhost:5000/api/verify`, {
                 course: courseSigla,
                 link: link,
                 date: date
             });
+
             if (response.status === 200) {
                 setIsValid(response.data.isValid);
                 console.log('Verification result:', response.data);
-                console.log('Verification result - Link:', link);
-                console.log('Verification result - Date:', date);
-                console.log('Verification result - Course:', courseSigla);
             }
         } catch (error) {
             console.error('Error verifying link:', error.response || error.message);
@@ -96,12 +108,17 @@ function MarcarAsistencia() {
                                 <Button variant="primary" onClick={verificarInformacion}>{t("verifyInformation")}</Button>
                             </>
                         )}
+                        {isClassDay === false && (
+                            <Alert variant="danger">
+                                {t("todayIsNotClassDay")}
+                            </Alert>
+                        )}
                         {isValid !== null && (
                             <Alert variant={isValid ? 'success' : 'danger'}>
                                 {isValid ? t("verificationSuccessful") : t("verificationFailed")}
                             </Alert>
                         )}
-                        {isValid && (
+                        {isValid && isClassDay && (
                             <Button variant="success" onClick={confirmarAsistencia}>{t("confirmAttendance")}</Button>
                         )}
                     </>

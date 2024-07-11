@@ -285,81 +285,90 @@ def assign_courses_to_students():
     db.session.commit()
 
 
-def generate_random_weekdays(start_date, end_date, n):
-    """Genera n fechas aleatorias entre start_date y end_date, solo de lunes a viernes."""
-    delta = end_date - start_date
-    weekdays = [start_date + timedelta(days=i) for i in range(delta.days + 1) if (start_date + timedelta(days=i)).weekday() < 5]
-    
-    if n > len(weekdays):
-        raise ValueError("No hay suficientes días de semana en el rango dado para generar las fechas deseadas.")
 
-    return random.sample(weekdays, n)
+
+def generate_class_dates(start_date, end_date, weekdays, n):
+    """Genera n fechas aleatorias entre start_date y end_date que coincidan con los días de la semana especificados."""
+    delta = end_date - start_date
+    valid_dates = [start_date + timedelta(days=i) for i in range(delta.days + 1) if (start_date + timedelta(days=i)).weekday() in weekdays]
+
+    if n > len(valid_dates):
+        raise ValueError("No hay suficientes días en el rango dado para generar las fechas deseadas.")
+
+    return random.sample(valid_dates, n)
 
 def assign_attendance_to_students():
-    # Definir el rango de fechas para la asistencia (marzo a junio)
+    print("Asignando asistencia a los estudiantes...")
     start_date = datetime.strptime('2024-03-01', '%Y-%m-%d').date()
     end_date = datetime.strptime('2024-06-30', '%Y-%m-%d').date()
     
-    # Número de fechas de asistencia a generar por curso
-    n_dates_per_course = 7
-    
     students = Student.query.all()
     for student in students:
+        print(f"Procesando estudiante: {student.first_name} {student.last_name}")
         enrollments = Enrollment.query.filter_by(student_id=student.id).all()
         for enrollment in enrollments:
             course_id = enrollment.course_id
-            attendance_dates = generate_random_weekdays(start_date, end_date, n_dates_per_course)
-            
-            for date in attendance_dates:
-                # Evitar duplicar registros de asistencia
-                existing_attendance = Attendance.query.filter_by(enrollment_id=enrollment.id, date=date).first()
-                if not existing_attendance:
-                    # Generar un estado de asistencia aleatorio
-                    status = random.choice(['present', 'absent'])
-                    attendance = Attendance(
-                        enrollment_id=enrollment.id,
-                        date=date,
-                        status=status
-                    )
-                    db.session.add(attendance)
-                    print(f"Asistencia {status} registrada para el estudiante {student.first_name} {student.last_name} en el curso {course_id} el {date}.")
-                else:
-                    print(f"Asistencia ya existe para el estudiante {student.first_name} {student.last_name} en el curso {course_id} el {date}.")
-    db.session.commit()
+            print(f" - Curso ID: {course_id}")
+            schedules = Schedule.query.filter_by(course_id=course_id).all()
+            weekdays = {schedule.dia for schedule in schedules}
+            weekday_map = {'Monday': 0, 'Tuesday': 1, 'Wednesday': 2, 'Thursday': 3, 'Friday': 4, 'Saturday': 5, 'Sunday': 6}
+            class_days = [weekday_map[day] for day in weekdays if day in weekday_map]
 
+            if class_days:
+                attendance_dates = generate_class_dates(start_date, end_date, class_days, len(class_days) * 4)
+                
+                for date in attendance_dates:
+                    existing_attendance = Attendance.query.filter_by(enrollment_id=enrollment.id, date=date).first()
+                    if not existing_attendance:
+                        status = random.choice(['present', 'absent'])
+                        attendance = Attendance(
+                            enrollment_id=enrollment.id,
+                            date=date,
+                            status=status
+                        )
+                        db.session.add(attendance)
+                        print(f"Asistencia {status} registrada para el estudiante {student.first_name} {student.last_name} en el curso {course_id} el {date}.")
+                    else:
+                        print(f"Asistencia ya existe para el estudiante {student.first_name} {student.last_name} en el curso {course_id} el {date}.")
+    db.session.commit()
+    print("Asignación de asistencia completada.")
 
 def assign_class_attendance_to_students():
-    # Definir el rango de fechas para la asistencia (marzo a junio)
+    print("Asignando asistencia de clases a los estudiantes...")
     start_date = datetime.strptime('2024-03-01', '%Y-%m-%d').date()
     end_date = datetime.strptime('2024-06-30', '%Y-%m-%d').date()
 
-    # Número de fechas de asistencia a generar por curso
-    n_dates_per_course = 7
-
     students = Student.query.all()
     for student in students:
+        print(f"Procesando estudiante: {student.first_name} {student.last_name}")
         enrollments = Enrollment.query.filter_by(student_id=student.id).all()
         for enrollment in enrollments:
             course_id = enrollment.course_id
-            attendance_dates = generate_random_weekdays(start_date, end_date, n_dates_per_course)
+            print(f" - Curso ID: {course_id}")
+            schedules = Schedule.query.filter_by(course_id=course_id).all()
+            weekdays = {schedule.dia for schedule in schedules}
+            weekday_map = {'Monday': 0, 'Tuesday': 1, 'Wednesday': 2, 'Thursday': 3, 'Friday': 4, 'Saturday': 5, 'Sunday': 6}
+            class_days = [weekday_map[day] for day in weekdays if day in weekday_map]
 
-            for date in attendance_dates:
-                # Evitar duplicar registros de asistencia
-                existing_class_attendance = ClassAttendance.query.filter_by(enrollment_id=enrollment.id, date=date).first()
-                if not existing_class_attendance:
-                    # Generar una modalidad de asistencia aleatoria
-                    modalidad = random.choice(['presencial', 'online'])
-                    class_attendance = ClassAttendance(
-                        enrollment_id=enrollment.id,
-                        date=date,
-                        modalidad=modalidad,
-                        confirmed=True  # Suponiendo que todos confirman su asistencia
-                    )
-                    db.session.add(class_attendance)
-                    print(f"Asistencia {modalidad} registrada para el estudiante {student.first_name} {student.last_name} en el curso {course_id} el {date}.")
-                else:
-                    print(f"Asistencia ya existe para el estudiante {student.first_name} {student.last_name} en el curso {course_id} el {date}.")
+            if class_days:
+                attendance_dates = generate_class_dates(start_date, end_date, class_days, len(class_days) * 4)
+
+                for date in attendance_dates:
+                    existing_class_attendance = ClassAttendance.query.filter_by(enrollment_id=enrollment.id, date=date).first()
+                    if not existing_class_attendance:
+                        modalidad = random.choice(['presencial', 'online'])
+                        class_attendance = ClassAttendance(
+                            enrollment_id=enrollment.id,
+                            date=date,
+                            modalidad=modalidad,
+                            confirmed=True
+                        )
+                        db.session.add(class_attendance)
+                        print(f"Asistencia {modalidad} registrada para el estudiante {student.first_name} {student.last_name} en el curso {course_id} el {date}.")
+                    else:
+                        print(f"Asistencia ya existe para el estudiante {student.first_name} {student.last_name} en el curso {course_id} el {date}.")
     db.session.commit()
+    print("Asignación de asistencia de clases completada.")
 
 def create_fake_students_and_data():
     fake_students = [
@@ -454,10 +463,40 @@ def create_fake_students_and_data():
                 otra="Otra preferencia" if random.choice([True, False]) else None
             )
             db.session.add(preference)
-
-    db.session.commit()
+            db.session.commit()
 
     # Asignar cursos y asistencia al estudiante
     assign_courses_to_students()
     assign_attendance_to_students()
     assign_class_attendance_to_students()
+
+def parse_attendance_file(file_path):
+    with open(file_path, mode='r', encoding='utf-8') as file:
+        csv_reader = csv.DictReader(file)
+        
+        for row in csv_reader:
+            enrollment_id = int(row['enrollment_id'])
+            date = datetime.strptime(row['date'], '%Y-%m-%d').date()
+            status = row['status']
+            
+            # Verificar si el registro de asistencia ya existe
+            existing_attendance = Attendance.query.filter_by(enrollment_id=enrollment_id, date=date).first()
+            
+            if not existing_attendance:
+                # Verificar si la inscripción existe
+                enrollment = Enrollment.query.get(enrollment_id)
+                if enrollment:
+                    attendance = Attendance(
+                        enrollment_id=enrollment_id,
+                        date=date,
+                        status=status
+                    )
+                    db.session.add(attendance)
+                    print(f"Asistencia {status} registrada para la inscripción {enrollment_id} en la fecha {date}.")
+                else:
+                    print(f"Inscripción con ID {enrollment_id} no encontrada. Saltando registro.")
+            else:
+                print(f"Asistencia ya existe para la inscripción {enrollment_id} en la fecha {date}. Saltando registro existente.")
+        
+        db.session.commit()
+        print("Registros de asistencia importados con éxito.")

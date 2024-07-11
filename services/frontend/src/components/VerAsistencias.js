@@ -16,7 +16,7 @@ function VerAsistencias() {
 
     useEffect(() => {
         if (currentUser) {
-            console.log("Fetching teacher courses...");
+            console.log(t("attendance.errorFetchingCourses"));
             axios.get(`http://localhost:5000/api/professors/${currentUser.id}/cursos2`)
                 .then(response => {
                     const data = response.data;
@@ -25,15 +25,15 @@ function VerAsistencias() {
                     setLoading(false);
                 })
                 .catch(error => {
-                    console.error('Error fetching teacher courses:', error);
-                    setError('Error fetching teacher courses. Please try again later.');
+                    console.error(t("attendance.errorFetchingCourses"), error);
+                    setError(t("attendance.errorFetchingCourses"));
                     setLoading(false);
                 });
         } else {
-            setError('No current user or user ID found.');
+            setError(t("attendance.errorFetchingCourses"));
             setLoading(false);
         }
-    }, [currentUser]);
+    }, [currentUser, t]);
 
     const fetchAttendances = (courseId) => {
         setLoading(true);
@@ -46,8 +46,8 @@ function VerAsistencias() {
                 setLoading(false);
             })
             .catch(error => {
-                console.error('Error fetching attendances:', error);
-                setError('Error fetching attendances. Please try again later.');
+                console.error(t("attendance.errorFetchingAttendances"), error);
+                setError(t("attendance.errorFetchingAttendances"));
                 setLoading(false);
             });
     };
@@ -65,7 +65,7 @@ function VerAsistencias() {
         const absentCount = attendances.filter(att => att.status === 'absent').length;
 
         return {
-            labels: [t('Present'), t('Absent')],
+            labels: [t('attendance.present'), t('attendance.absent')],
             datasets: [
                 {
                     data: [presentCount, absentCount],
@@ -80,7 +80,7 @@ function VerAsistencias() {
         return (
             <Container style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
                 <Spinner animation="border" role="status">
-                    <span className="visually-hidden">{t('loading')}</span>
+                    <span className="visually-hidden">{t('attendance.loading')}</span>
                 </Spinner>
             </Container>
         );
@@ -97,7 +97,7 @@ function VerAsistencias() {
     }
 
     if (!currentUser) {
-        return <Container><h1>{t('loginRequired')}</h1></Container>;
+        return <Container><h1>{t('attendance.loginRequired')}</h1></Container>;
     }
 
     return (
@@ -106,11 +106,11 @@ function VerAsistencias() {
                 <Row className="justify-content-center align-items-center">
                     <Col md={8} lg={6} xl={10}>
                         <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', textAlign: 'center' }}>
-                            <h2 className="text-center mb-4">{t('total-attendance')}</h2>
+                            <h2 className="text-center mb-4">{t('attendance.totalAttendance')}</h2>
                             <Form.Group>
-                                <Form.Label>{t('selectCourse')}</Form.Label>
+                                <Form.Label>{t('attendance.selectCourse')}</Form.Label>
                                 <Form.Control as="select" value={selectedCurso} onChange={handleCourseChange}>
-                                    <option value="">{t('selectCourse')}</option>
+                                    <option value="">{t('attendance.selectCourse')}</option>
                                     {cursos.map(course => (
                                         <option key={course.id} value={course.id}>
                                             {course.name}

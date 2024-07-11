@@ -7,8 +7,7 @@ function NewRegister() {
     const navigate = useNavigate();
     const { t } = useTranslation("global");
     const [formData, setFormData] = useState({
-        rutNumber: '',
-        dv: '',
+        rut: '',
         first_name: '',
         last_name: '',
         email: '',
@@ -37,23 +36,14 @@ function NewRegister() {
         return res.toString();
     };
 
-    const isValidRutFormat = (rutNumber, dv) => {
-        const rutPattern = /^[0-9]+$/;
-        const dvPattern = /^[0-9Kk]$/;
-        return rutPattern.test(rutNumber) && dvPattern.test(dv);
-    };
-
-    const validateRut = (rutNumber, dv) => {
-        if (!isValidRutFormat(rutNumber, dv)) {
+    const validateRut = (rut) => {
+        const rutParts = rut.split('-');
+        if (rutParts.length !== 2) {
             return false;
         }
-        return calculateDv(rutNumber) === dv.toUpperCase();
-    };
-
-    const formatRut = (rutNumber, dv) => {
-        // Split the RUT number into thousands, millions, etc.
-        const rutParts = rutNumber.replace(/\D/g, '').split(/(?=(?:\d{3})+$)/).join('.');
-        return `${rutParts}-${dv.toUpperCase()}`;
+        const rutNumber = rutParts[0].replace(/\D/g, ''); // Remove non-numeric characters
+        const dv = rutParts[1].toUpperCase();
+        return calculateDv(rutNumber) === dv;
     };
 
     const handleFormSubmit = async (event) => {
@@ -63,12 +53,12 @@ function NewRegister() {
             return;
         }
 
-        if (!validateRut(formData.rutNumber, formData.dv)) {
+        if (!validateRut(formData.rut)) {
             setError(t('invalidRut'));
             return;
         }
 
-        const formattedRut = formatRut(formData.rutNumber, formData.dv);
+        const formattedRut = formData.rut.replace(/\D/g, ''); // Remove non-numeric characters and hyphen
 
         try {
             const response = await fetch('http://localhost:5000/api/creacion-nuevo-alumno', {
@@ -109,34 +99,17 @@ function NewRegister() {
                         {error && <Alert variant="danger">{error}</Alert>}
                         {success && <Alert variant="success">{t('registrationSuccessful')}</Alert>}
                         <Form onSubmit={handleFormSubmit}>
-                            <Row>
-                                <Col>
-                                    <Form.Group controlId="formBasicRut" className="mb-3">
-                                        <Form.Label>{t('rut')}</Form.Label>
-                                        <div className="input-group">
-                                            <Form.Control
-                                                type="text"
-                                                placeholder={t('enterRutNumber')}
-                                                name="rutNumber"
-                                                value={formData.rutNumber}
-                                                onChange={handleChange}
-                                                required
-                                            />
-                                            <div className="input-group-append">
-                                                <span className="input-group-text">-</span>
-                                            </div>
-                                            <Form.Control
-                                                type="text"
-                                                placeholder={t('dv')}
-                                                name="dv"
-                                                value={formData.dv}
-                                                onChange={handleChange}
-                                                required
-                                            />
-                                        </div>
-                                    </Form.Group>
-                                </Col>
-                            </Row>
+                            <Form.Group controlId="formBasicRut" className="mb-3">
+                                <Form.Label>{t('rut')}</Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    placeholder={t('enterRut')}
+                                    name="rut"
+                                    value={formData.rut}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </Form.Group>
 
                             <Form.Group controlId="formBasicFirstName" className="mb-3">
                                 <Form.Label>{t('firstName')}</Form.Label>

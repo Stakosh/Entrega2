@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from flask_restx import Api, Resource, Namespace, fields
 from flask import request, jsonify, Flask, send_from_directory, abort
-from werkzeug.utils import secure_filename, safe_join
+from werkzeug.utils import secure_filename, safe_join 
 from app2.config import DevelopmentConfig
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask.cli import FlaskGroup
@@ -10,7 +10,8 @@ from parse_courses import (parse_courses_file, initialize_courses_and_careers,
                            parse_schedules_file, initialize_schedules, 
                            create_students_from_credencial, assign_courses_to_students, 
                            initialize_default_users,assign_attendance_to_students,
-                           assign_class_attendance_to_students,create_fake_students_and_data)
+                           assign_class_attendance_to_students,create_fake_students_and_data,
+                           parse_attendance_file)
 from extensions import db
 from models import *
 import bcrypt
@@ -21,7 +22,7 @@ import logging
 import json
 from sqlalchemy import func
 from sqlalchemy.exc import SQLAlchemyError
-
+from werkzeug.security import generate_password_hash
 
 SECRET_KEY ='clave_secreta_por_defecto'
 
@@ -165,6 +166,10 @@ def login():
 ############## FIN LOGIN 
 
 
+
+
+
+
 @app.route('/api/validate_token', methods=['POST'])
 def validate_token():
     token = request.json.get('token')
@@ -230,45 +235,58 @@ def reset_password():
 
 
 
-# API Endpoint para crear un nuevo alumno / solo para admin
-@student_ns.route('/creacion-nuevo-alumno')
-class CreateStudent(Resource):
-    @student_ns.expect(student_model)
-    def post(self):
-        data = request.get_json()
-        email = data.get('email')
-        password = data.get('password')
-        rut = data.get('rut')
 
-        if not email or not password or not rut:
-            return {"error": "Email, password, and RUT are required"}, 400
+@app.route('/api/creacion-nuevo-alumno', methods=['POST'])
+def create_new_student():
+    data = request.json
+    rut = data['rut']
+    first_name = data['first_name']
+    last_name = data['last_name']
+    email = data['email']
+    password = data['password']
+    tipo_acceso = data['tipo_acceso']
 
-        if CREDENCIAL.query.filter_by(email=email).first():
-            return {"error": "User already exists"}, 409
+    existing_credential = CREDENCIAL.query.filter_by(rut=rut).first()
+    if existing_credential:
+        return jsonify({'message': 'RUT already exists'}), 400
 
-        if CREDENCIAL.query.filter_by(rut=rut).first():
-            return {"error": "RUT already exists"}, 409
+    hashed_password = generate_password_hash(password)
+    new_credential = CREDENCIAL(
+        rut=rut,
+        first_name=first_name,
+        last_name=last_name,
+        email=email,
+        password=hashed_password,
+        tipo_acceso=tipo_acceso
+    )
 
-        if not self.validate_rut_format(rut):
-            return {"error": "Invalid RUT format"}, 400
+    db.session.add(new_credential)
+    db.session.commit()
 
-        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-        new_student = CREDENCIAL(
-            rut=rut,
-            first_name=data.get('first_name'),
-            last_name=data.get('last_name'),
-            email=email,
-            password=hashed_password,
-            tipo_acceso=data.get('tipo_acceso')
-        )
-        db.session.add(new_student)
-        db.session.commit()
+    return jsonify({'message': 'Credential created successfully'}), 201
 
-        return {"message": "User registered successfully"}, 201
 
-    def validate_rut_format(self, rut):
-        import re
-        return bool(re.match(r"^\d{1,3}(?:\.\d{3})*-[\dkK]$", rut))
+def calculate_dv(rut):
+    reversed_digits = map(int, reversed(rut))
+    factors = cycle(range(2, 8))
+    total = sum(d * f for d, f in zip(reversed_digits, factors))
+    remainder = total % 11
+    dv = 11 - remainder
+    if dv == 11:
+        return '0'
+    elif dv == 10:
+        return 'K'
+    else:
+        return str(dv)
+
+def validate_rut(rut):
+    if not '-' in rut:
+        return False
+    rut_number, dv = rut.split('-')
+    rut_number = rut_number.replace('.', '')
+    if calculate_dv(rut_number) == dv.upper():
+        return True
+    return False
 
 
 
@@ -978,7 +996,9 @@ with app.app_context():
     assign_courses_to_students()
     assign_attendance_to_students()
     assign_class_attendance_to_students()
-    create_fake_students_and_data()
+    create_fake_students_and_data() #agrega info a la base de datos
+    parse_attendance_file('/app/data/attendance_records.csv')
+    
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0')

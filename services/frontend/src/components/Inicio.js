@@ -106,13 +106,22 @@ function Inicio() {
                                     {t('resolucionJustificaciones')}
                                 </Button>
                             </Row>
-                            <Row xs="auto" className="justify-content-center">
+                            <Row xs="auto" className="justify-content-center mb-3">
                                 <Button
                                     variant="light"
                                     style={{ width: '50%', padding: '10px', color: 'black', backgroundColor: 'whitesmoke' }}
                                     onClick={() => navigate('/Ver-Estadisticas')}
                                 >
                                     {t('VerEstadisticas')}
+                                </Button>
+                            </Row>
+                            <Row xs="auto" className="justify-content-center">
+                                <Button
+                                    variant="light"
+                                    style={{ width: '50%', padding: '10px', color: 'black', backgroundColor: 'whitesmoke' }}
+                                    onClick={() => navigate('/register')}
+                                >
+                                    {t('register-new-alumno')}
                                 </Button>
                             </Row>
                         </>

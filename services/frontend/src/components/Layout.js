@@ -50,13 +50,15 @@ const Layout = ({ children }) => {
                                         <Nav.Link as={Link} to="/inicio">{t('inicio')}</Nav.Link>
                                         <Nav.Link as={Link} to="/justificaciones">{t('justificaciones')}</Nav.Link>
                                         <Nav.Link as={Link} to="/asistencias">{t('asistencias')}</Nav.Link>
+                                        <Nav.Link as={Link} to="/marcar-asistencia">{t('markAttendance')}</Nav.Link>
                                     </Nav>
                                 )}
                                 {(location.pathname === '/justificaciones' ) && (
                                     <Nav className="me-auto">
                                         <Nav.Link as={Link} to="/inicio">{t('inicio')}</Nav.Link>
                                         <Nav.Link as={Link} to="/proximos-cursos">{t('proximosCursos')}</Nav.Link>
-                                        <Nav.Link as={Link} to="/asistencias">{t('justificaciones')}</Nav.Link>
+                                        <Nav.Link as={Link} to="/asistencias">{t('asistencias')}</Nav.Link>
+                                        <Nav.Link as={Link} to="/marcar-asistencia">{t('markAttendance')}</Nav.Link>
                                     </Nav>
                                 )}
                                 {(location.pathname === '/asistencias' ) && (
@@ -64,6 +66,15 @@ const Layout = ({ children }) => {
                                         <Nav.Link as={Link} to="/inicio">{t('inicio')}</Nav.Link>
                                         <Nav.Link as={Link} to="/proximos-cursos">{t('proximosCursos')}</Nav.Link>
                                         <Nav.Link as={Link} to="/justificaciones">{t('justificaciones')}</Nav.Link>
+                                        <Nav.Link as={Link} to="/marcar-asistencia">{t('markAttendance')}</Nav.Link>
+                                    </Nav>
+                                )}
+                                {(location.pathname === '/marcar-asistencia' ) && (
+                                    <Nav className="me-auto">
+                                        <Nav.Link as={Link} to="/inicio">{t('inicio')}</Nav.Link>
+                                        <Nav.Link as={Link} to="/justificaciones">{t('justificaciones')}</Nav.Link>
+                                        <Nav.Link as={Link} to="/proximos-cursos">{t('proximosCursos')}</Nav.Link>
+                                        <Nav.Link as={Link} to="/asistencias">{t('asistencias')}</Nav.Link>
                                     </Nav>
                                 )}
                                 {(location.pathname === '/ver-asistencias' ) && (

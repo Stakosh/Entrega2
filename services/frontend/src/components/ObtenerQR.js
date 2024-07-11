@@ -4,8 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { QRCodeCanvas as QRCode } from 'qrcode.react';
 import { useAuth } from './AuthContext';
 import axios from 'axios';
-//import ImgFondo from '../img/foto-fondo2.jpg';
-
 
 function ObtenerQR() {
     const { t } = useTranslation("global");
@@ -27,15 +25,15 @@ function ObtenerQR() {
                     setLoading(false);
                 })
                 .catch(error => {
-                    console.error('Error fetching professor courses:', error);
-                    setError('Error fetching professor courses. Please try again later.');
+                    console.error(t('qr.errorFetchingCourses'), error);
+                    setError(t('qr.errorFetchingCourses'));
                     setLoading(false);
                 });
         } else {
-            setError('No current user or user ID found.');
+            setError(t('qr.errorFetchingCourses'));
             setLoading(false);
         }
-    }, [currentUser]);
+    }, [currentUser, t]);
 
     const handleCourseChange = (event) => {
         setSelectedCurso(event.target.value);
@@ -60,15 +58,15 @@ function ObtenerQR() {
             .then(response => {
                 console.log('Backend response:', response.data);
                 setQrValue(qrUrl);  // Establecer el valor QR después de la respuesta
-                alert('Datos enviados correctamente');
+                alert(t('qr.dataSentSuccessfully'));
             })
             .catch(error => {
-                console.error('Error sending data to backend:', error);
-                setError('Error sending data to backend. Please try again later.');
+                console.error(t('qr.errorSendingData'), error);
+                setError(t('qr.errorSendingData'));
             });
         } catch (error) {
-            console.error('Error generating data:', error);
-            setError('Error generating data. Please try again later.');
+            console.error(t('qr.errorGeneratingData'), error);
+            setError(t('qr.errorGeneratingData'));
         }
     };
 
@@ -78,7 +76,7 @@ function ObtenerQR() {
                 <Row className="justify-content-md-center">
                     <Col xs={12} className="text-center">
                         <Spinner animation="border" />
-                        <p>{t('Cargando cursos...')}</p>
+                        <p>{t('qr.loadingCourses')}</p>
                     </Col>
                 </Row>
             </Container>
@@ -100,12 +98,12 @@ function ObtenerQR() {
                 <Col xs={12} md={8} lg={6}>
                     <Card >
                         <Card.Body>
-                            <Card.Title className="text-center mb-4">{t('Generar Código QR')}</Card.Title>
+                            <Card.Title className="text-center mb-4">{t('qr.generateQR')}</Card.Title>
                             <Form>
                                 <Form.Group>
-                                    <Form.Label>{t('Seleccione el curso')}</Form.Label>
+                                    <Form.Label>{t('qr.selectCourse')}</Form.Label>
                                     <Form.Control as="select" value={selectedCurso} onChange={handleCourseChange}>
-                                        <option value="">{t('Seleccione un curso')}</option>
+                                        <option value="">{t('qr.selectACourse')}</option>
                                         {cursos.map(course => (
                                             <option key={course.sigla_curso} value={course.sigla_curso}>
                                                 {course.name}
@@ -115,7 +113,7 @@ function ObtenerQR() {
                                 </Form.Group>
                                 <div className="d-grid gap-2 mt-3">
                                     <Button variant="primary" onClick={confirmar} disabled={!selectedCurso}>
-                                        {t('Confirmar')}
+                                        {t('qr.confirm')}
                                     </Button>
                                 </div>
                             </Form>
@@ -132,6 +130,6 @@ function ObtenerQR() {
     );
 }
 
-
-
 export default ObtenerQR;
+
+

@@ -4,7 +4,6 @@ import { Bar, Pie } from 'react-chartjs-2';
 import axios from 'axios';
 import 'chart.js/auto';
 import { useTranslation } from 'react-i18next';
-import ImgFondo from '../img/foto-fondo2.jpg';
 
 function VerEstadisticas() {
     const { t } = useTranslation("global");
@@ -22,7 +21,7 @@ function VerEstadisticas() {
 
     if (!statistics) {
         return (
-            <Container style={{ backgroundImage: `url(${ImgFondo})`, backgroundSize: 'cover', display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+            <Container style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
                 <Spinner animation="border" role="status">
                     <span className="visually-hidden">{t('loading')}</span>
                 </Spinner>
@@ -31,7 +30,7 @@ function VerEstadisticas() {
     }
 
     const encuestaAlimentariaData = {
-        labels: ['Participated', 'Not Participated'],
+        labels: [t('Participated'), t('Not Participated')],
         datasets: [{
             data: [
                 statistics.encuesta_alimentaria.true || 0,
@@ -42,7 +41,7 @@ function VerEstadisticas() {
     };
 
     const attendanceData = {
-        labels: ['Present', 'Absent'],
+        labels: [t('Present'), t('Absent')],
         datasets: [{
             data: [
                 statistics.attendance.present || 0,
@@ -53,7 +52,7 @@ function VerEstadisticas() {
     };
 
     const modalidadData = {
-        labels: ['Presencial', 'Online'],
+        labels: [t('Presencial'), t('Online')],
         datasets: [{
             data: [
                 statistics.modalidad.presencial || 0,
@@ -64,7 +63,7 @@ function VerEstadisticas() {
     };
 
     const justificacionesData = {
-        labels: ['Pendiente', 'Aprobada', 'Rechazada'],
+        labels: [t('Pendiente'), t('Aprobada'), t('Rechazada')],
         datasets: [{
             data: [
                 statistics.justificaciones.pendiente || 0,
@@ -76,7 +75,7 @@ function VerEstadisticas() {
     };
 
     const dietaryRestrictionsData = {
-        labels: ['Vegano', 'Celiaco', 'Diabetico Tipo 1', 'Diabetico Tipo 2', 'Alergico', 'Vegetariano', 'Intolerante a la Lactosa', 'Otra'],
+        labels: [t('Vegano'), t('Celiaco'), t('Diabetico Tipo 1'), t('Diabetico Tipo 2'), t('Alergico'), t('Vegetariano'), t('Intolerante a la Lactosa'), t('Otra')],
         datasets: [{
             data: [
                 statistics.dietary_restrictions.vegano || 0,
@@ -93,33 +92,33 @@ function VerEstadisticas() {
     };
 
     return (
-        <Container style={{ backgroundImage: `url(${ImgFondo})`, backgroundSize: 'cover', backgroundPosition: 'center', minHeight: '100vh', overflowY: 'auto' }}>
-            <Row className="justify-content-center align-items-center" style={{ minHeight: '100vh' }}>
-                <Col md={8} lg={6} xl={4}>
+        <Container style={{ padding: '40px' }}>
+            <Row className="justify-content-center align-items-center">
+                <Col md={8} lg={6} xl={4} className="mb-4">
                     <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', textAlign: 'center' }}>
                         <h3 className="text-center mb-4">{t('encuestaAlimentaria')}</h3>
                         <Pie data={encuestaAlimentariaData} />
                     </div>
                 </Col>
-                <Col md={8} lg={6} xl={4}>
+                <Col md={8} lg={6} xl={4} className="mb-4">
                     <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', textAlign: 'center' }}>
-                        <h3 className="text-center mb-4">{t('attendance')}</h3>
+                        <h3 className="text-center mb-4">{t('asistencia')}</h3>
                         <Pie data={attendanceData} />
                     </div>
                 </Col>
-                <Col md={8} lg={6} xl={4}>
+                <Col md={8} lg={6} xl={4} className="mb-4">
                     <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', textAlign: 'center' }}>
                         <h3 className="text-center mb-4">{t('modalidadDeAsistencia')}</h3>
                         <Pie data={modalidadData} />
                     </div>
                 </Col>
-                <Col md={8} lg={6} xl={4}>
+                <Col md={8} lg={6} xl={4} className="mb-4">
                     <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', textAlign: 'center' }}>
                         <h3 className="text-center mb-4">{t('justificaciones')}</h3>
                         <Pie data={justificacionesData} />
                     </div>
                 </Col>
-                <Col md={12}>
+                <Col md={12} className="mb-4">
                     <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', textAlign: 'center' }}>
                         <h3 className="text-center mb-4">{t('dietaryRestrictions')}</h3>
                         <Bar data={dietaryRestrictionsData} />
