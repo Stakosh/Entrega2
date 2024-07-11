@@ -4,16 +4,15 @@ import { useTranslation } from 'react-i18next';
 import { QRCodeCanvas as QRCode } from 'qrcode.react';
 import { useAuth } from './AuthContext';
 import axios from 'axios';
-import ImgFondo from '../img/foto-fondo2.jpg';
 
 function ObtenerQR() {
     const { t } = useTranslation("global");
     const { currentUser } = useAuth();
     const [cursos, setCursos] = useState([]);
     const [selectedCurso, setSelectedCurso] = useState('');
+    const [qrValue, setQrValue] = useState('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [qrUrl, setQrUrl] = useState('');
 
     useEffect(() => {
         if (currentUser && currentUser.id) {
@@ -41,44 +40,38 @@ function ObtenerQR() {
         console.log('Selected course ID:', event.target.value);
     };
 
-    const confirmar = () => {
+    const CrearValidador = async () => {
         try {
             const currentDate = new Date().toISOString();
             const qrUrl = `http://localhost:3000/marcar-asistencia?course=${selectedCurso}&date=${currentDate}`;
+            console.log('Generating QR for URL:', qrUrl);
+
+            // Send the qrUrl, currentDate and selectedCurso to the backend
             console.log('Sending data to backend:', { course: selectedCurso, date: currentDate, qr_url: qrUrl });
 
-            const formData = new FormData();
-            formData.append('course', selectedCurso);
-            formData.append('date', currentDate);
-            formData.append('qr_url', qrUrl);
-
-            fetch('http://localhost:5000/api/store_validation_data', {
-                method: 'POST',
-                body: formData,
+            axios.post('http://localhost:5000/api/store_validation_data', {
+                course: selectedCurso,
+                date: currentDate,
+                qr_url: qrUrl
             })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    console.log('Success:', data);
-                    alert('Datos enviados correctamente');
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    setError('Error sending data to backend. Please try again later.');
-                });
+            .then(response => {
+                console.log('Backend response:', response.data);
+                setQrValue(qrUrl);
+            })
+            .catch(error => {
+                console.error('Error sending data to backend:', error);
+                setError('Error sending data to backend. Please try again later.');
+            });
+
         } catch (error) {
-            console.error('Error generating data:', error);
-            setError('Error generating data. Please try again later.');
+            console.error('Error generating QR code:', error);
+            setError('Error generating QR code. Please try again later.');
         }
     };
 
     if (loading) {
         return (
-            <Container className="mt-4" style={styles.container}>
+            <Container className="mt-4">
                 <Row className="justify-content-md-center">
                     <Col xs={12} className="text-center">
                         <Spinner animation="border" />
@@ -90,7 +83,7 @@ function ObtenerQR() {
     }
 
     return (
-        <Container className="mt-4" style={styles.container}>
+        <Container className="mt-4">
             {error && (
                 <Row className="justify-content-md-center">
                     <Col xs={12} md={6}>
@@ -113,33 +106,20 @@ function ObtenerQR() {
                             ))}
                         </Form.Control>
                     </Form.Group>
-                    <div className="d-grid gap-2">
-                        <Button variant="primary" onClick={confirmar} disabled={!selectedCurso}>
-                            Confirmar
-                        </Button>
-                    </div>
+                    <Button variant="outline-secondary" onClick={CrearValidador} disabled={!selectedCurso}>
+                        Generar QR
+                    </Button>
                 </Col>
             </Row>
-            <Row className="justify-content-md-center mt-4">
+            <Row className="justify-content-md-center">
                 <Col xs={12} md={6} className="text-center">
-                    <Button variant="success" disabled>
-                        Botón Verde
-                    </Button>
+                    {qrValue && (
+                        <QRCode value={qrValue} size={256} level={"H"} includeMargin={true} />
+                    )}
                 </Col>
             </Row>
         </Container>
     );
 }
-
-const styles = {
-    container: {
-        backgroundImage: `url(${ImgFondo})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        padding: '20px',
-        borderRadius: '10px',
-        color: 'white'
-    }
-};
 
 export default ObtenerQR;
