@@ -465,14 +465,23 @@ def uploaded_file(filename):
 # API Endpoint para encontrar asignaturas del estudiante
 @app.route('/api/estudiante/<int:student_id>/asignaturas', methods=['GET'])
 def get_asignaturas_estudiante(student_id):
-    print(f"Fetching subjects for student_id: {student_id}")  # Añadir registro de consola
-    asignaturas = db.session.query(Course).join(Enrollment).filter(
-        Enrollment.student_id == student_id
-    ).all()
-    
-    asignaturas_json = [asignatura.to_json() for asignatura in asignaturas]
-    return jsonify(asignaturas_json)
-
+    try:
+        print(f"Fetching subjects for student_id: {student_id}")  # Añadir registro de consola
+        asignaturas = db.session.query(Course).join(Enrollment).filter(
+            Enrollment.student_id == student_id
+        ).all()
+        
+        if not asignaturas:
+            print(f"No subjects found for student_id: {student_id}")
+            return jsonify({"message": "No subjects found"}), 404
+        
+        asignaturas_json = [asignatura.to_json() for asignatura in asignaturas]
+        print(f"Subjects fetched: {asignaturas_json}")  # Añadir registro de consola
+        
+        return jsonify(asignaturas_json)
+    except Exception as e:
+        print(f"Error fetching subjects: {e}")
+        return jsonify({"message": "Error fetching subjects"}), 500
 
 
 
@@ -546,15 +555,13 @@ def register_attendance():
         data = request.json
         student_id = data.get('student_id')
         course_id = data.get('course_id')
-        status = data.get('status', 'present')
+        status = data.get('status', 'present')  # Aquí ya permites 'present' por defecto, pero puede venir 'absent' desde el cliente.
         date = datetime.strptime(data.get('date'), '%Y-%m-%d').date()
 
-        # Find the enrollment
         enrollment = Enrollment.query.filter_by(student_id=student_id, course_id=course_id).first()
         if not enrollment:
             return jsonify({'error': 'Enrollment not found'}), 404
 
-        # Create and save the attendance record
         attendance = Attendance(
             enrollment_id=enrollment.id,
             date=date,
@@ -562,7 +569,7 @@ def register_attendance():
         )
         db.session.add(attendance)
         db.session.commit()
-        
+
         return jsonify({'message': 'Attendance registered successfully'}), 201
 
     except SQLAlchemyError as e:
@@ -570,6 +577,7 @@ def register_attendance():
 
     except Exception as e:
         return jsonify({'error': 'Internal server error', 'details': str(e)}), 500
+
 
 
 # API Endpoint para obtener asistencias del estudiante
@@ -718,31 +726,33 @@ def store_validation_data():
         return jsonify({'error': str(e)}), 500
 
 
-@app.route('/api/verify_link', methods=['POST'])
-def verify_link():
+@app.route('/api/verify', methods=['POST'])
+def verify():
     data = request.get_json()
-    course = data.get('course')
-    link = data.get('link')
-    date = data.get('date')
+    received_course = data.get('course')
+    received_link = data.get('link')
+    received_date_str = data.get('date')
 
-    if not all([course, link, date]):
+    if not all([received_course, received_link, received_date_str]):
         return jsonify({'error': 'Course, link, and date are required'}), 400
 
-    # Convertir la fecha de string a objeto datetime
-    date = datetime.fromisoformat(date)
+    # Convert received date string to date object
+    try:
+        received_date = datetime.fromisoformat(received_date_str).date()
+    except ValueError:
+        return jsonify({'error': 'Invalid date format'}), 400
 
-    # Buscar un registro que coincida con el curso, link y la fecha (solo la parte de la fecha, ignorando el tiempo)
-    validation_link = ValidationData.query.filter(
-        ValidationData.course == course,
-        ValidationData.link == link,
-        db.func.date(ValidationData.date) == date.date()
+    # Query the database for validation data
+    validation_data = ValidationData.query.filter_by(
+        course=received_course,
+        qr_url=received_link,
+        date=received_date
     ).first()
 
-    if validation_link:
-        return jsonify({'message': 'Link validado correctamente'}), 200
+    if validation_data:
+        return jsonify({'isValid': True}), 200
     else:
-        return jsonify({'error': 'Link no válido o no encontrado'}), 404
-
+        return jsonify({'isValid': False}), 404
 
 ############################## RUTAS ADMIN ############################################################################################################
 

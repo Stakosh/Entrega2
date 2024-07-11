@@ -18,7 +18,7 @@ function ProximosCursos() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (currentUser && currentUser.id) {
+        if (currentUser) {
             console.log("Fetching student courses and info...");
             axios.get(`http://localhost:5000/api/estudiante/${currentUser.id}/cursos`)
                 .then(response => {

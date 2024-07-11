@@ -1,120 +1,97 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Button, Row, Col, Form, Alert, Spinner } from 'react-bootstrap';
-import axios from 'axios';
+import { Container, Button, Row, Col, Modal, Spinner, Form, Alert } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
+import ImgFondo from '../img/foto-fondo2.jpg';
+import { useAuth } from './AuthContext';
+import axios from 'axios';
 
-function MarcarAsistencia({ currentUser }) {
+function MarcarAsistencia() {
     const { t } = useTranslation("global");
+    const { currentUser } = useAuth();
     const [cursos, setCursos] = useState([]);
-    const [selectedCurso, setSelectedCurso] = useState('');
-    const [validador, setValidador] = useState('');
+    const [selectedCurso, setSelectedCurso] = useState("");
+    const [link, setLink] = useState("");
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
+    const [showConfirm, setShowConfirm] = useState(false);
+    const [isValid, setIsValid] = useState(null);
 
     useEffect(() => {
-        if (currentUser && currentUser.id) {
-            console.log("Fetching student courses and info...");
-            axios.get(`http://localhost:5000/api/estudiante/${currentUser.id}/asignaturas`)
-                .then(response => {
-                    const courses = response.data;
-                    console.log("Courses fetched:", courses);
-                    setCursos(courses);
-                })
-                .catch(error => {
-                    console.error('Error fetching student info:', error);
-                    setError('Error al cargar los cursos del estudiante');
-                })
-                .finally(() => {
-                    setLoading(false);
-                });
-        }
+        axios.get(`http://localhost:5000/api/estudiante/${currentUser.id}/cursos`)
+            .then(response => {
+                setCursos(response.data);
+                setLoading(false);
+            })
+            .catch(error => {
+                console.error('Error fetching courses:', error);
+                setLoading(false);
+            });
     }, [currentUser]);
 
-    const handleCursoChange = (event) => {
-        setSelectedCurso(event.target.value);
-    };
-
-    const handleValidadorChange = (event) => {
-        setValidador(event.target.value);
-    };
-
-    const submitAsistencia = async () => {
-        console.log(`Submitting attendance for course ${selectedCurso} with validator ${validador}`);
-        const currentDate = new Date().toISOString().split('T')[0];
-
+    const verificarInformacion = async () => {
         try {
-            const verifyResponse = await axios.post('http://localhost:5000/api/verify_link', {
+            const response = await axios.post(`http://localhost:5000/api/verify`, {
                 course: selectedCurso,
-                link: validador,
-                date: currentDate
+                link: link,
+                date: new Date().toISOString().split('T')[0]
             });
-
-            if (verifyResponse.status === 200) {
-                const attendanceResponse = await axios.post('http://localhost:5000/api/mark-attendance', {
-                    token_info: validador,
-                    student_id: currentUser.id
-                });
-
-                if (attendanceResponse.status === 200) {
-                    setSuccess('Asistencia marcada correctamente');
-                    setError('');
-                } else {
-                    setError('Error al registrar la asistencia');
-                    setSuccess('');
-                }
-            } else {
-                setError('Link de validación incorrecto');
-                setSuccess('');
-            }
+            setIsValid(response.data.isValid);
+            console.log('Verification result:', response.data);
         } catch (error) {
-            console.error('Error submitting attendance:', error);
-            setError('Error al marcar asistencia');
-            setSuccess('');
+            console.error('Error verifying link:', error);
         }
     };
 
-    if (loading) {
-        return (
-            <Container className="mt-4">
-                <Row className="justify-content-md-center">
-                    <Col xs={12} className="text-center">
-                        <Spinner animation="border" />
-                        <p>{t('Cargando cursos...')}</p>
-                    </Col>
-                </Row>
-            </Container>
-        );
-    }
+    const confirmarAsistencia = async () => {
+        if (isValid) {
+            try {
+                const response = await axios.post(`http://localhost:5000/api/attendances`, {
+                    course_id: selectedCurso,
+                    student_id: currentUser.id,
+                    status: 'present',
+                    date: new Date().toISOString().split('T')[0]
+                });
+                console.log('Attendance confirmed:', response.data);
+            } catch (error) {
+                console.error('Error confirming attendance:', error);
+            }
+        }
+    };
 
     return (
-        <Container className="mt-4">
-            <Row className="justify-content-md-center">
-                <Col xs={12} md={6}>
-                    <h1>Marcar Asistencia</h1>
-                    {error && <Alert variant="danger">{error}</Alert>}
-                    {success && <Alert variant="success">{success}</Alert>}
-                    <Form>
-                        <Form.Group>
-                            <Form.Label>Seleccione su curso:</Form.Label>
-                            <Form.Control as="select" value={selectedCurso} onChange={handleCursoChange}>
-                                <option value="">Seleccione un curso</option>
-                                {cursos.map((curso) => (
-                                    <option key={curso.course_id} value={curso.course_id}>{curso.name}</option>
-                                ))}
-                            </Form.Control>
-                        </Form.Group>
+        <div style={{ backgroundImage: `url(${ImgFondo})`, backgroundSize: 'cover', backgroundPosition: 'center', height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <Container className="d-flex flex-column justify-content-center align-items-center">
+                <h2 className="text-light">{t("attendance.markAttendance")}</h2>
+                {loading ? (
+                    <Spinner animation="border" variant="light" />
+                ) : (
+                    <>
+                        <Form.Select aria-label="Select course" onChange={e => setSelectedCurso(e.target.value)}>
+                            <option>Select a course</option>
+                            {cursos.map((curso) => (
+                                <option key={curso.id} value={curso.id}>{curso.name}</option>
+                            ))}
+                        </Form.Select>
                         {selectedCurso && (
-                            <Form.Group className="mt-3">
-                                <Form.Label>Token de Validación:</Form.Label>
-                                <Form.Control type="text" placeholder="Ingrese el token de validación" value={validador} onChange={handleValidadorChange} />
-                            </Form.Group>
+                            <>
+                                <Form.Group className="mb-3" controlId="formLink">
+                                    <Form.Label>Verification Link</Form.Label>
+                                    <Form.Control type="text" placeholder="Enter link or data here" onChange={e => setLink(e.target.value)} />
+                                </Form.Group>
+                                <Button variant="primary" onClick={verificarInformacion}>Verify Information</Button>
+                            </>
                         )}
-                        <Button className="mt-3" onClick={submitAsistencia} disabled={!validador || !selectedCurso}>Confirmar</Button>
-                    </Form>
-                </Col>
-            </Row>
-        </Container>
+                        {isValid !== null && (
+                            <Alert variant={isValid ? 'success' : 'danger'}>
+                                {isValid ? 'Verification Successful. Confirming attendance...' : 'Verification Failed. Please try again.'}
+                            </Alert>
+                        )}
+                        {isValid && (
+                            <Button variant="success" onClick={confirmarAsistencia}>Confirm Attendance</Button>
+                        )}
+                    </>
+                )}
+            </Container>
+        </div>
     );
 }
 

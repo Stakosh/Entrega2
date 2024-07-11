@@ -164,7 +164,7 @@ class Attendance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     enrollment_id = db.Column(db.Integer, db.ForeignKey('enrollment.id'), nullable=False)
     date = db.Column(db.Date, nullable=False)
-    status = db.Column(Enum('present', 'absent', 'late', name='attendance_status'), nullable=False)
+    status = db.Column(Enum('present', 'absent', name='attendance_status'), nullable=False)
     enrollment = db.relationship('Enrollment', backref=db.backref('attendances', lazy=True))
 
     def to_json(self):

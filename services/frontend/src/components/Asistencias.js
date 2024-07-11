@@ -14,7 +14,7 @@ function Asistencias() {
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        if (currentUser && currentUser.id) {
+        if (currentUser) {
             console.log("Fetching student courses...");
             axios.get(`http://localhost:5000/api/estudiante/${currentUser.id}/cursos`)
                 .then(response => {
