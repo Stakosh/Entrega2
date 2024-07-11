@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, Table, Spinner, Alert, Form } from 'react-bootstrap';
 import { useAuth } from './AuthContext';
 import axios from 'axios';
-import { format, eachDayOfInterval, getDay, endOfMonth, startOfMonth, addDays } from 'date-fns';
+import { format, eachDayOfInterval, getDay, endOfMonth, startOfMonth } from 'date-fns';
 
 function Asistencias() {
     const { currentUser } = useAuth();

@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
 from sqlalchemy import Enum, Date, Integer, String, Boolean, Column
 db = SQLAlchemy()
 
@@ -175,6 +176,26 @@ class Attendance(db.Model):
             "student": self.enrollment.student.first_name + " " + self.enrollment.student.last_name,
             "course": self.enrollment.course.name
         }
+
+
+
+class ValidationData(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    course = db.Column(db.String(100), nullable=False)
+    date = db.Column(db.DateTime, nullable=False)
+    qr_url = db.Column(db.String(500), nullable=False)
+
+    def to_json(self):
+        return {
+            'id': self.id,
+            'course': self.course,
+            'date': self.date.isoformat(),
+            'qr_url': self.qr_url
+        }
+
+    def __repr__(self):
+        return f'<ValidationData {self.course}>'
+
 
 
 justificacion_asignaturas = db.Table('justificacion_asignaturas',

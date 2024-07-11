@@ -19,10 +19,12 @@ import os
 import time
 
 
+import json
+
 from sqlalchemy.exc import SQLAlchemyError
 
 
-
+SECRET_KEY ='clave_secreta_por_defecto'
 
 
 
@@ -30,7 +32,7 @@ from sqlalchemy.exc import SQLAlchemyError
 app = Flask(__name__)
 app.config.from_object(DevelopmentConfig)
 
-
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'clave_secreta_por_defecto') ##probando
 # Configuración de CORS
 CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
 
@@ -158,6 +160,22 @@ def login():
     }), 200
 
 ############## FIN LOGIN 
+
+
+@app.route('/api/validate_token', methods=['POST'])
+def validate_token():
+    token = request.json.get('token')
+    try:
+        # Decodificar el token usando la clave secreta desde la configuración de Flask
+        decoded = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
+        course_id = decoded['course_id']
+        return jsonify({"message": "Token is valid", "course_id": course_id}), 200
+    except jwt.ExpiredSignatureError:
+        return jsonify({"error": "Token expired"}), 401
+    except jwt.InvalidTokenError:
+        return jsonify({"error": "Invalid token"}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 
@@ -602,6 +620,7 @@ def get_course_attendances(course_id):
 
 
 
+
 # API Endpoint para obtener cursos que dicta el profesor
 @app.route('/api/professors/<int:profesor_id>/cursos', methods=['GET'])
 def get_professor_courses(profesor_id):
@@ -629,6 +648,106 @@ def get_professor_courses(profesor_id):
     except Exception as e:
         # Manejar excepciones generales
         return jsonify({'error': 'Error interno del servidor', 'details': str(e)}), 500
+
+
+
+
+@app.route('/api/generate-attendance-token', methods=['POST'])
+def generate_attendance_token():
+    course_id = request.json.get('course_id')
+    try:
+        token = generate_token(course_id)  # Función que genera un token único
+        return jsonify({'token': token}), 200
+    except Exception as e:
+        print(f'Failed to generate token: {e}')
+        return json.dumps({'error': 'Error generating QR code.'}), 500
+
+
+
+
+@app.route('/api/mark-attendance', methods=['POST'])
+def mark_attendance():
+    token_info = request.json.get('token_info')  # Esto puede ser el token directo o la URL completa del QR
+    student_id = request.json.get('student_id')
+
+    try:
+        # Si el token_info incluye la URL, extraemos solo el token
+        if 'http' in token_info:
+            token = token_info.split('token=')[1].split('&')[0]
+        else:
+            token = token_info
+        
+        decoded = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        course_id = decoded['course_id']
+
+        # Aquí se verificaría la existencia del curso y del estudiante en la base de datos
+        # Luego, se registraría la asistencia
+
+        return 'Attendance marked successfully.', 200
+    except jwt.ExpiredSignatureError:
+        return jsonify({'error': 'Token expired'}), 401
+    except Exception as e:
+        print(f'Error marking attendance: {e}')
+        return jsonify({'error': 'Invalid token'}), 400
+    
+
+
+
+
+@app.route('/api/store_validation_data', methods=['POST'])
+def store_validation_data():
+    try:
+        data = request.get_json()
+        logging.info(f"Received data: {data}")
+
+        course = data.get('course')
+        date = data.get('date')
+        qr_url = data.get('qr_url')
+
+        if not all([course, date, qr_url]):
+            logging.error("Course, date, and QR URL are required")
+            return jsonify({'error': 'Course, date, and QR URL are required'}), 400
+
+        date = datetime.fromisoformat(date)
+        new_data = ValidationData(course=course, date=date, qr_url=qr_url)
+        db.session.add(new_data)
+        db.session.commit()
+
+        logging.info(f"Data stored successfully: {new_data.to_json()}")
+        return jsonify(new_data.to_json()), 201
+
+    except Exception as e:
+        logging.error(f"Error storing data: {e}")
+        return jsonify({'error': 'Internal Server Error'}), 500
+
+
+
+
+
+@app.route('/api/verify_link', methods=['POST'])
+def verify_link():
+    data = request.get_json()
+    course = data.get('course')
+    link = data.get('link')
+    date = data.get('date')
+
+    if not all([course, link, date]):
+        return jsonify({'error': 'Course, link, and date are required'}), 400
+
+    # Convertir la fecha de string a objeto datetime
+    date = datetime.fromisoformat(date)
+
+    # Buscar un registro que coincida con el curso, link y la fecha (solo la parte de la fecha, ignorando el tiempo)
+    validation_link = ValidationLink.query.filter(
+        ValidationLink.course == course,
+        ValidationLink.link == link,
+        db.func.date(ValidationLink.date) == date.date()
+    ).first()
+
+    if validation_link:
+        return jsonify({'message': 'Link validado correctamente'}), 200
+    else:
+        return jsonify({'error': 'Link no válido o no encontrado'}), 404
 
 
 ############################## RUTAS ADMIN ############################################################################################################

@@ -65,6 +65,16 @@ function Inicio() {
                                         {t('ver-asistencias')}
                                     </Button>
                                 </Row>
+                                <Row xs="auto" className="justify-content-center">
+                                    <Button
+                                        variant="light"
+                                        className="mb-3"
+                                        style={{ width: '50%', padding: '10px', color: 'black', backgroundColor: 'whitesmoke' }}
+                                        onClick={() => navigate('/marcar-asistencia')}
+                                    >
+                                        {t('Marcar Asistencia')}
+                                    </Button>
+                                </Row>
                             </>
                         )}
                         {currentUser?.tipo_acceso === 'profesor' && (
