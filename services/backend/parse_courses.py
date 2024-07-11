@@ -1,7 +1,7 @@
 import csv
 import bcrypt
 from extensions import db
-from models import Carrera, Course, Schedule, Student, CREDENCIAL, Enrollment, Teacher, Admin, Attendance, ClassAttendance
+from models import Carrera, Course, Schedule, Student, CREDENCIAL, Enrollment, Teacher, Admin, Attendance, ClassAttendance, DietaryPreference
 import csv
 import bcrypt
 from datetime import datetime, timedelta
@@ -401,32 +401,63 @@ def create_fake_students_and_data():
         }
     ]
 
-    for user in fake_students:
-        hashed_password = bcrypt.hashpw(user['password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-        new_user = CREDENCIAL(
-            rut=user['rut'],
-            first_name=user['first_name'],
-            last_name=user['last_name'],
-            email=user['email'],
-            password=hashed_password,
-            tipo_acceso=user['tipo_acceso'],
-            carrera=user.get('carrera')
-        )
-        db.session.add(new_user)
-        db.session.commit()
+    students = []
 
-        student = Student(
-            credencial_id=new_user.id,
-            rut=user['rut'],
-            first_name=user['first_name'],
-            last_name=user['last_name'],
-            carrera=user['carrera'],
-            semestre_que_cursa=4,
-            EncuestaAlimentaria=random.choice([True, False])
-        )
-        db.session.add(student)
-        db.session.commit()
-        # Asignar cursos y asistencia al estudiante
-        assign_courses_to_students()
-        assign_attendance_to_students()
-        assign_class_attendance_to_students()
+    for user in fake_students:
+        existing_user = CREDENCIAL.query.filter_by(rut=user['rut']).first()
+        if existing_user:
+            print(f"User with rut {user['rut']} already exists.")
+            new_user = existing_user
+        else:
+            hashed_password = bcrypt.hashpw(user['password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+            new_user = CREDENCIAL(
+                rut=user['rut'],
+                first_name=user['first_name'],
+                last_name=user['last_name'],
+                email=user['email'],
+                password=hashed_password,
+                tipo_acceso=user['tipo_acceso'],
+                carrera=user.get('carrera')
+            )
+            db.session.add(new_user)
+            db.session.commit()
+
+        existing_student = Student.query.filter_by(credencial_id=new_user.id).first()
+        if existing_student:
+            print(f"Student with credencial_id {new_user.id} already exists.")
+            student = existing_student
+        else:
+            student = Student(
+                credencial_id=new_user.id,
+                rut=user['rut'],
+                first_name=user['first_name'],
+                last_name=user['last_name'],
+                carrera=user['carrera'],
+                semestre_que_cursa=4,
+                EncuestaAlimentaria=random.choice([True, False])
+            )
+            db.session.add(student)
+            db.session.commit()
+        students.append(student)
+
+    # Crear preferencias dietéticas para los estudiantes que participaron en la encuesta
+    for student in students:
+        if student.EncuestaAlimentaria:
+            preference = DietaryPreference(
+                student_id=student.id,
+                vegano=random.choice([True, False]),
+                celiaco=random.choice([True, False]),
+                diabetico_tipo1=random.choice([True, False]),
+                diabetico_tipo2=random.choice([True, False]),
+                alergico=random.choice([True, False]),
+                vegetariano=random.choice([True, False]),
+                otra="Otra preferencia" if random.choice([True, False]) else None
+            )
+            db.session.add(preference)
+
+    db.session.commit()
+
+    # Asignar cursos y asistencia al estudiante
+    assign_courses_to_students()
+    assign_attendance_to_students()
+    assign_class_attendance_to_students()
