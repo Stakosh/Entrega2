@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Button, Row, Col, Modal, Spinner, Form, Alert } from 'react-bootstrap';
+import { Container, Button, Spinner, Form, Alert } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import ImgFondo from '../img/foto-fondo2.jpg';
 import { useAuth } from './AuthContext';
@@ -9,10 +9,9 @@ function MarcarAsistencia() {
     const { t } = useTranslation("global");
     const { currentUser } = useAuth();
     const [cursos, setCursos] = useState([]);
-    const [selectedCurso, setSelectedCurso] = useState("");
+    const [selectedCurso, setSelectedCurso] = useState(null); // Cambiar a objeto para almacenar id y sigla_curso
     const [link, setLink] = useState("");
     const [loading, setLoading] = useState(true);
-    const [showConfirm, setShowConfirm] = useState(false);
     const [isValid, setIsValid] = useState(null);
 
     useEffect(() => {
@@ -28,27 +27,40 @@ function MarcarAsistencia() {
     }, [currentUser]);
 
     const verificarInformacion = async () => {
+        const date = new Date().toISOString().split('T')[0];  // Fecha actual
+        const courseSigla = selectedCurso.sigla_curso; // Usar sigla_curso para la verificación
+    
+        console.log(`Verifying - Course Sigla: ${courseSigla}, Link: ${link}, Date: ${date}`);
         try {
             const response = await axios.post(`http://localhost:5000/api/verify`, {
-                course: selectedCurso,
+                course: courseSigla,
                 link: link,
-                date: new Date().toISOString().split('T')[0]
+                date: date
             });
-            setIsValid(response.data.isValid);
-            console.log('Verification result:', response.data);
+            if (response.status === 200) {
+                setIsValid(response.data.isValid);
+                console.log('Verification result:', response.data);
+                // Imprimir los valores después de la verificación
+                console.log('Verification result - Link:', link);
+                console.log('Verification result - Date:', date);
+                console.log('Verification result - Course:', courseSigla);
+            }
         } catch (error) {
-            console.error('Error verifying link:', error);
+            console.error('Error verifying link:', error.response || error.message);
+            setIsValid(false); // Asumir inválido si ocurre un error
         }
     };
 
     const confirmarAsistencia = async () => {
+        const date = new Date().toISOString().split('T')[0];  // Fecha actual
+        console.log(`Confirming Attendance - Course ID: ${selectedCurso.id}, Date: ${date}`);
         if (isValid) {
             try {
                 const response = await axios.post(`http://localhost:5000/api/attendances`, {
-                    course_id: selectedCurso,
+                    course_id: selectedCurso.id,  // Usar id para el registro de asistencia
                     student_id: currentUser.id,
                     status: 'present',
-                    date: new Date().toISOString().split('T')[0]
+                    date: date
                 });
                 console.log('Attendance confirmed:', response.data);
             } catch (error) {
@@ -65,10 +77,15 @@ function MarcarAsistencia() {
                     <Spinner animation="border" variant="light" />
                 ) : (
                     <>
-                        <Form.Select aria-label="Select course" onChange={e => setSelectedCurso(e.target.value)}>
+                        <Form.Select aria-label="Select course" onChange={e => {
+                            const selected = cursos.find(curso => curso.id === parseInt(e.target.value));
+                            setSelectedCurso(selected);
+                        }}>
                             <option>Select a course</option>
                             {cursos.map((curso) => (
-                                <option key={curso.id} value={curso.id}>{curso.name}</option>
+                                <option key={curso.id} value={curso.id}>
+                                    {curso.name} ({curso.sigla_curso})
+                                </option>
                             ))}
                         </Form.Select>
                         {selectedCurso && (

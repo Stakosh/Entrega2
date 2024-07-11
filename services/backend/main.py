@@ -752,7 +752,7 @@ def verify():
     if validation_data:
         return jsonify({'isValid': True}), 200
     else:
-        return jsonify({'isValid': False}), 404
+        return jsonify({'isValid': False}), 200  # salio mal la verificacion
 
 ############################## RUTAS ADMIN ############################################################################################################
 
