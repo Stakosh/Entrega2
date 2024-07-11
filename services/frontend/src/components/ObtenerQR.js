@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { QRCodeCanvas as QRCode } from 'qrcode.react';
 import { useAuth } from './AuthContext';
 import axios from 'axios';
-import ImgFondo from '../img/foto-fondo2.jpg';
+//import ImgFondo from '../img/foto-fondo2.jpg';
 
 
 function ObtenerQR() {

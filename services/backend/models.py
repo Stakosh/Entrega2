@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlalchemy import Enum, Date, Integer, String, Boolean, Column
 db = SQLAlchemy()
 
+#donde estan mis credenciales iniciales del programa
 class CREDENCIAL(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     rut = db.Column(db.String(100), unique=True)
@@ -25,6 +26,7 @@ class CREDENCIAL(db.Model):
             "carrera": self.carrera
         }
 
+#carreras existentes en la universidad
 class Carrera(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True, nullable=False)
@@ -37,7 +39,7 @@ class Carrera(db.Model):
     
 
 
-    
+#estudiantes registrados en la universidad
 class Student(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     credencial_id = db.Column(db.Integer, db.ForeignKey('CREDENCIAL.id'), nullable=False)
@@ -62,7 +64,7 @@ class Student(db.Model):
             "EncuestaAlimentaria" : self.EncuestaAlimentaria
         }
     
-
+#profesores registrados en la universidad
 class Teacher(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     credencial_id = db.Column(db.Integer, db.ForeignKey('CREDENCIAL.id'), nullable=False)
@@ -81,6 +83,7 @@ class Teacher(db.Model):
         }
 
 
+#admins registrados
 class Admin(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     credencial_id = db.Column(db.Integer, db.ForeignKey('CREDENCIAL.id'), nullable=False)
@@ -99,6 +102,7 @@ class Admin(db.Model):
         }
 
 
+#asignaturas que se dictan en la universidad
 class Course(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sigla_curso = db.Column(db.String(20), unique=True, nullable=False)
@@ -121,7 +125,7 @@ class Course(db.Model):
             "teacher": self.teacher.first_name + " " + self.teacher.last_name
         }
     
-
+#horarios de clases 
 class Schedule(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     course_id = db.Column(db.Integer, db.ForeignKey('course.id'), nullable=False)
@@ -143,6 +147,7 @@ class Schedule(db.Model):
         }
 
 
+#para inscribir a alumnos en sus asignaturas
 class Enrollment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False)
@@ -159,7 +164,7 @@ class Enrollment(db.Model):
             "course": self.course.name
         }
 
-
+#asistencia a clase
 class Attendance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     enrollment_id = db.Column(db.Integer, db.ForeignKey('enrollment.id'), nullable=False)
@@ -178,7 +183,7 @@ class Attendance(db.Model):
         }
 
 
-
+#informacion para luego validar asistencia
 class ValidationData(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     course = db.Column(db.String(100), nullable=False)
@@ -197,14 +202,14 @@ class ValidationData(db.Model):
         return f'<ValidationData {self.course}>'
 
 
-
+#relacion muchos es a muchos para justificaciones
 justificacion_asignaturas = db.Table('justificacion_asignaturas',
     db.Column('justificacion_id', db.Integer, db.ForeignKey('justificacion.id'), primary_key=True),
     db.Column('course_id', db.Integer, db.ForeignKey('course.id'), primary_key=True)
 )
 
 
-
+#modelo de justificaciones
 class Justificacion(db.Model):
     id = Column(Integer, primary_key=True)
     student_id = Column(Integer, db.ForeignKey('student.id'), nullable=False)
@@ -231,7 +236,7 @@ class Justificacion(db.Model):
 
 
 
-
+#modelo de encuesta alimentaria
 class DietaryPreference(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False)
@@ -255,7 +260,7 @@ class DietaryPreference(db.Model):
             "vegetariano": self.vegetariano
         }
 
-
+#modelo para registrar modalidad de asistencia
 class ClassAttendance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     enrollment_id = db.Column(db.Integer, db.ForeignKey('enrollment.id'), nullable=False)

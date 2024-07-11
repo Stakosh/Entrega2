@@ -9,18 +9,17 @@ from flask_cors import CORS
 from parse_courses import (parse_courses_file, initialize_courses_and_careers, 
                            parse_schedules_file, initialize_schedules, 
                            create_students_from_credencial, assign_courses_to_students, 
-                           initialize_default_users)
+                           initialize_default_users,assign_attendance_to_students,
+                           assign_class_attendance_to_students)
 from extensions import db
 from models import *
-
 import bcrypt
 import jwt
 import os
 import time
 import logging
-import uuid
 import json
-
+from sqlalchemy import func
 from sqlalchemy.exc import SQLAlchemyError
 
 
@@ -410,6 +409,7 @@ def get_course_schedules(course_id):
 
 
 
+
 # API Endpoint para confirmar modalidad a cursos
 @app.route('/api/estudiante/<int:student_id>/confirmar-curso', methods=['POST'])
 def confirmar_curso(student_id):
@@ -633,6 +633,50 @@ def get_course_attendances(course_id):
 
 
 
+@app.route('/api/professors/<int:profesor_id>/cursos2', methods=['GET'])
+def get_professor_courses2(profesor_id):
+    try:
+        # Verificar si el profesor existe
+        professor = Teacher.query.get(profesor_id)
+        if not professor:
+            return jsonify({'error': 'Profesor no encontrado'}), 404
+
+        # Obtener los cursos que dicta el profesor
+        courses = Course.query.filter_by(teacher_id=profesor_id).all()
+
+        if not courses:
+            return jsonify({'message': 'No hay cursos asociados a este profesor'}), 200
+
+        # Filtrar y solo devolver sigla_curso y name
+        course_data = [{"id": course.id, "sigla_curso": course.sigla_curso, "name": course.name} for course in courses]
+
+        return jsonify(course_data), 200
+
+    except SQLAlchemyError as e:
+        # Manejar errores de la base de datos
+        return jsonify({'error': 'Error en la base de datos', 'details': str(e)}), 500
+
+    except Exception as e:
+        # Manejar excepciones generales
+        return jsonify({'error': 'Error interno del servidor', 'details': str(e)}), 500
+
+
+
+
+@app.route('/api/curso/<int:course_id>/horarios2', methods=['GET'])
+def get_course_schedules2(course_id):
+    try:
+        schedules = Schedule.query.filter_by(course_id=course_id).all()
+        schedule_data = [schedule.to_json() for schedule in schedules]
+        return jsonify(schedule_data), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+
+
+
+
+
 # API Endpoint para obtener cursos que dicta el profesor
 @app.route('/api/professors/<int:profesor_id>/cursos', methods=['GET'])
 def get_professor_courses(profesor_id):
@@ -757,9 +801,6 @@ def verify():
 ############################## RUTAS ADMIN ############################################################################################################
 
 
-
-
-
 # # API Endpoint para dar nombre y apellido de estudiante
 @app.route('/api/estudiante/<int:student_id>/info/existencia', methods=['GET'])
 def get_student_info_2(student_id):
@@ -820,6 +861,69 @@ def rechazar_justificacion(id):
 
 
 
+@app.route('/api/statistics', methods=['GET'])
+def get_statistics():
+    # Encuesta Alimentaria
+    encuesta_alimentaria_data = db.session.query(
+        Student.EncuestaAlimentaria,
+        func.count(Student.EncuestaAlimentaria)
+    ).group_by(Student.EncuestaAlimentaria).all()
+    
+    # Asistencia
+    attendance_data = db.session.query(
+        Attendance.status,
+        func.count(Attendance.status)
+    ).group_by(Attendance.status).all()
+    
+    # Modalidad de Asistencia
+    modalidad_data = db.session.query(
+        ClassAttendance.modalidad,
+        func.count(ClassAttendance.modalidad)
+    ).group_by(ClassAttendance.modalidad).all()
+    
+    # Justificaciones
+    justificaciones_data = db.session.query(
+        Justificacion.status,
+        func.count(Justificacion.status)
+    ).group_by(Justificacion.status).all()
+
+    return jsonify({
+        'encuesta_alimentaria': dict(encuesta_alimentaria_data),
+        'attendance': dict(attendance_data),
+        'modalidad': dict(modalidad_data),
+        'justificaciones': dict(justificaciones_data)
+    })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # Crear la base de datos y tablas si no existen# # # # # # # # # # # # # # # # # # # # # # # #
 # Inicializa la extensión de base de datos
@@ -839,6 +943,8 @@ with app.app_context():
     print("Se crearon horarios")
     create_students_from_credencial()
     assign_courses_to_students()
+    assign_attendance_to_students()
+    assign_class_attendance_to_students()
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0')

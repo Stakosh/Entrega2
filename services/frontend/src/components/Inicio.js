@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import '../App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import ImgFondo from '../img/foto-fondo2.jpg';
-import { Button, Container, Row, Col } from 'react-bootstrap';
+import { Button, Container, Row} from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from './AuthContext'; 
 

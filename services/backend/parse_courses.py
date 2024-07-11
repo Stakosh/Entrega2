@@ -1,7 +1,11 @@
 import csv
 import bcrypt
 from extensions import db
-from models import Carrera, Course, Schedule, Student, CREDENCIAL, Enrollment, Teacher, Admin
+from models import Carrera, Course, Schedule, Student, CREDENCIAL, Enrollment, Teacher, Admin, Attendance, ClassAttendance
+import csv
+import bcrypt
+from datetime import datetime, timedelta
+import random
 
 def initialize_default_users():
     if not CREDENCIAL.query.first():
@@ -20,7 +24,7 @@ def initialize_default_users():
                 'first_name': 'Ignacio',
                 'last_name': 'Zuñiga',
                 'email': 'nachito@correo.cl',
-                'password': 'nachito',
+                'password': 'sushi',
                 'tipo_acceso': 'alumno',
                 'carrera': 'INDUSTRIAL'
             },
@@ -279,3 +283,150 @@ def assign_courses_to_students():
                 print(f"El estudiante {student.first_name} {student.last_name} ya está inscrito en el curso {course.name}.")
     
     db.session.commit()
+
+
+def generate_random_weekdays(start_date, end_date, n):
+    """Genera n fechas aleatorias entre start_date y end_date, solo de lunes a viernes."""
+    delta = end_date - start_date
+    weekdays = [start_date + timedelta(days=i) for i in range(delta.days + 1) if (start_date + timedelta(days=i)).weekday() < 5]
+    
+    if n > len(weekdays):
+        raise ValueError("No hay suficientes días de semana en el rango dado para generar las fechas deseadas.")
+
+    return random.sample(weekdays, n)
+
+def assign_attendance_to_students():
+    # Definir el rango de fechas para la asistencia (marzo a junio)
+    start_date = datetime.strptime('2024-03-01', '%Y-%m-%d').date()
+    end_date = datetime.strptime('2024-06-30', '%Y-%m-%d').date()
+    
+    # Número de fechas de asistencia a generar por curso
+    n_dates_per_course = 7
+    
+    students = Student.query.all()
+    for student in students:
+        enrollments = Enrollment.query.filter_by(student_id=student.id).all()
+        for enrollment in enrollments:
+            course_id = enrollment.course_id
+            attendance_dates = generate_random_weekdays(start_date, end_date, n_dates_per_course)
+            
+            for date in attendance_dates:
+                # Evitar duplicar registros de asistencia
+                existing_attendance = Attendance.query.filter_by(enrollment_id=enrollment.id, date=date).first()
+                if not existing_attendance:
+                    # Generar un estado de asistencia aleatorio
+                    status = random.choice(['present', 'absent'])
+                    attendance = Attendance(
+                        enrollment_id=enrollment.id,
+                        date=date,
+                        status=status
+                    )
+                    db.session.add(attendance)
+                    print(f"Asistencia {status} registrada para el estudiante {student.first_name} {student.last_name} en el curso {course_id} el {date}.")
+                else:
+                    print(f"Asistencia ya existe para el estudiante {student.first_name} {student.last_name} en el curso {course_id} el {date}.")
+    db.session.commit()
+
+
+def assign_class_attendance_to_students():
+    # Definir el rango de fechas para la asistencia (marzo a junio)
+    start_date = datetime.strptime('2024-03-01', '%Y-%m-%d').date()
+    end_date = datetime.strptime('2024-06-30', '%Y-%m-%d').date()
+
+    # Número de fechas de asistencia a generar por curso
+    n_dates_per_course = 7
+
+    students = Student.query.all()
+    for student in students:
+        enrollments = Enrollment.query.filter_by(student_id=student.id).all()
+        for enrollment in enrollments:
+            course_id = enrollment.course_id
+            attendance_dates = generate_random_weekdays(start_date, end_date, n_dates_per_course)
+
+            for date in attendance_dates:
+                # Evitar duplicar registros de asistencia
+                existing_class_attendance = ClassAttendance.query.filter_by(enrollment_id=enrollment.id, date=date).first()
+                if not existing_class_attendance:
+                    # Generar una modalidad de asistencia aleatoria
+                    modalidad = random.choice(['presencial', 'online'])
+                    class_attendance = ClassAttendance(
+                        enrollment_id=enrollment.id,
+                        date=date,
+                        modalidad=modalidad,
+                        confirmed=True  # Suponiendo que todos confirman su asistencia
+                    )
+                    db.session.add(class_attendance)
+                    print(f"Asistencia {modalidad} registrada para el estudiante {student.first_name} {student.last_name} en el curso {course_id} el {date}.")
+                else:
+                    print(f"Asistencia ya existe para el estudiante {student.first_name} {student.last_name} en el curso {course_id} el {date}.")
+    db.session.commit()
+
+def create_fake_students_and_data():
+    fake_students = [
+        {
+            'rut': '999999901',
+            'first_name': 'Juan',
+            'last_name': 'Perez',
+            'email': 'falso1@correo.cl',
+            'password': 'juan',
+            'tipo_acceso': 'alumno',
+            'carrera': 'INFORMATICA'
+        },
+        {
+            'rut': '999999902',
+            'first_name': 'Daniela',
+            'last_name': 'Gutierrez',
+            'email': 'falso2@correo.cl',
+            'password': 'dani',
+            'tipo_acceso': 'alumno',
+            'carrera': 'INDUSTRIAL'
+        },
+        {
+            'rut': '999999903',
+            'first_name': 'Josefina',
+            'last_name': 'Oyanader',
+            'email': 'falso3@correo.cl',
+            'password': 'jose',
+            'tipo_acceso': 'alumno',
+            'carrera': 'ENERGIA'
+        },
+        {
+            'rut': '999999904',
+            'first_name': 'Nicolas',
+            'last_name': 'Soto',
+            'email': 'falso4@correo.cl',
+            'password': 'nico',
+            'tipo_acceso': 'alumno',
+            'carrera': 'INFORMATICA'
+        }
+    ]
+
+    for user in fake_students:
+        hashed_password = bcrypt.hashpw(user['password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        new_user = CREDENCIAL(
+            rut=user['rut'],
+            first_name=user['first_name'],
+            last_name=user['last_name'],
+            email=user['email'],
+            password=hashed_password,
+            tipo_acceso=user['tipo_acceso'],
+            carrera=user.get('carrera')
+        )
+        db.session.add(new_user)
+        db.session.commit()
+
+        student = Student(
+            credencial_id=new_user.id,
+            rut=user['rut'],
+            first_name=user['first_name'],
+            last_name=user['last_name'],
+            carrera=user['carrera'],
+            semestre_que_cursa=4,
+            EncuestaAlimentaria=random.choice([True, False])
+        )
+        db.session.add(student)
+        db.session.commit()
+        # Asignar cursos y asistencia al estudiante
+        assign_courses_to_students()
+        assign_attendance_to_students()
+        assign_class_attendance_to_students()

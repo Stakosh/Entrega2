@@ -9,7 +9,7 @@ function MarcarAsistencia() {
     const { t } = useTranslation("global");
     const { currentUser } = useAuth();
     const [cursos, setCursos] = useState([]);
-    const [selectedCurso, setSelectedCurso] = useState(null); // Cambiar a objeto para almacenar id y sigla_curso
+    const [selectedCurso, setSelectedCurso] = useState(null);
     const [link, setLink] = useState("");
     const [loading, setLoading] = useState(true);
     const [isValid, setIsValid] = useState(null);
@@ -27,8 +27,8 @@ function MarcarAsistencia() {
     }, [currentUser]);
 
     const verificarInformacion = async () => {
-        const date = new Date().toISOString().split('T')[0];  // Fecha actual
-        const courseSigla = selectedCurso.sigla_curso; // Usar sigla_curso para la verificación
+        const date = new Date().toISOString().split('T')[0];
+        const courseSigla = selectedCurso.sigla_curso;
     
         console.log(`Verifying - Course Sigla: ${courseSigla}, Link: ${link}, Date: ${date}`);
         try {
@@ -40,24 +40,23 @@ function MarcarAsistencia() {
             if (response.status === 200) {
                 setIsValid(response.data.isValid);
                 console.log('Verification result:', response.data);
-                // Imprimir los valores después de la verificación
                 console.log('Verification result - Link:', link);
                 console.log('Verification result - Date:', date);
                 console.log('Verification result - Course:', courseSigla);
             }
         } catch (error) {
             console.error('Error verifying link:', error.response || error.message);
-            setIsValid(false); // Asumir inválido si ocurre un error
+            setIsValid(false);
         }
     };
 
     const confirmarAsistencia = async () => {
-        const date = new Date().toISOString().split('T')[0];  // Fecha actual
+        const date = new Date().toISOString().split('T')[0];
         console.log(`Confirming Attendance - Course ID: ${selectedCurso.id}, Date: ${date}`);
         if (isValid) {
             try {
                 const response = await axios.post(`http://localhost:5000/api/attendances`, {
-                    course_id: selectedCurso.id,  // Usar id para el registro de asistencia
+                    course_id: selectedCurso.id,
                     student_id: currentUser.id,
                     status: 'present',
                     date: date
@@ -71,17 +70,17 @@ function MarcarAsistencia() {
 
     return (
         <div style={{ backgroundImage: `url(${ImgFondo})`, backgroundSize: 'cover', backgroundPosition: 'center', height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <Container className="d-flex flex-column justify-content-center align-items-center">
-                <h2 className="text-light">{t("attendance.markAttendance")}</h2>
+            <Container className="d-flex flex-column justify-content-center align-items-center" style={{ backgroundColor: 'white', padding: '20px', borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
+                <h2 className="text-center mb-4">{t("attendance.markAttendance")}</h2>
                 {loading ? (
-                    <Spinner animation="border" variant="light" />
+                    <Spinner animation="border" variant="primary" />
                 ) : (
                     <>
                         <Form.Select aria-label="Select course" onChange={e => {
                             const selected = cursos.find(curso => curso.id === parseInt(e.target.value));
                             setSelectedCurso(selected);
                         }}>
-                            <option>Select a course</option>
+                            <option>{t("selectCourse")}</option>
                             {cursos.map((curso) => (
                                 <option key={curso.id} value={curso.id}>
                                     {curso.name} ({curso.sigla_curso})
@@ -91,19 +90,19 @@ function MarcarAsistencia() {
                         {selectedCurso && (
                             <>
                                 <Form.Group className="mb-3" controlId="formLink">
-                                    <Form.Label>Verification Link</Form.Label>
-                                    <Form.Control type="text" placeholder="Enter link or data here" onChange={e => setLink(e.target.value)} />
+                                    <Form.Label>{t("verificationLink")}</Form.Label>
+                                    <Form.Control type="text" placeholder={t("enterLink")} onChange={e => setLink(e.target.value)} />
                                 </Form.Group>
-                                <Button variant="primary" onClick={verificarInformacion}>Verify Information</Button>
+                                <Button variant="primary" onClick={verificarInformacion}>{t("verifyInformation")}</Button>
                             </>
                         )}
                         {isValid !== null && (
                             <Alert variant={isValid ? 'success' : 'danger'}>
-                                {isValid ? 'Verification Successful. Confirming attendance...' : 'Verification Failed. Please try again.'}
+                                {isValid ? t("verificationSuccessful") : t("verificationFailed")}
                             </Alert>
                         )}
                         {isValid && (
-                            <Button variant="success" onClick={confirmarAsistencia}>Confirm Attendance</Button>
+                            <Button variant="success" onClick={confirmarAsistencia}>{t("confirmAttendance")}</Button>
                         )}
                     </>
                 )}
