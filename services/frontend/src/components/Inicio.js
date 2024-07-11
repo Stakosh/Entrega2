@@ -19,118 +19,106 @@ function Inicio() {
     }
 
     return (
-        <div>
-            <div
-                style={{
-                    backgroundImage: `url(${ImgFondo})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center top',
-                    height: '100vh',
-                    textAlign: 'center',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                }}
-            >
-                <Container>
-                    <Row className="justify-content-center">
-                        {currentUser?.tipo_acceso === 'alumno' && (
-                            <>
-                                <Row xs="auto" className="justify-content-center">
-                                    <Button
-                                        variant="light"
-                                        className="mb-3"
-                                        style={{ width: '50%', padding: '10px', color: 'black', backgroundColor: 'whitesmoke' }}
-                                        onClick={() => navigate('/justificaciones')}
-                                    >
-                                        {t('enviar-justificaciones')}
-                                    </Button>
-                                </Row>
-                                <Row xs="auto" className="justify-content-center">
-                                    <Button
-                                        variant="light"
-                                        className="mb-3"
-                                        style={{ width: '50%', padding: '10px', color: 'black', backgroundColor: 'whitesmoke' }}
-                                        onClick={() => navigate('/proximos-cursos')}
-                                    >
-                                        {t('ver-proximosCursos')}
-                                    </Button>
-                                </Row>
-                                <Row xs="auto" className="justify-content-center">
-                                    <Button
-                                        variant="light"
-                                        style={{ width: '50%', padding: '10px', color: 'black', backgroundColor: 'whitesmoke' }}
-                                        onClick={() => navigate('/asistencias')}
-                                    >
-                                        {t('ver-asistencias')}
-                                    </Button>
-                                </Row>
-                                <Row xs="auto" className="justify-content-center">
-                                    <Button
-                                        variant="light"
-                                        className="mb-3"
-                                        style={{ width: '50%', padding: '10px', color: 'black', backgroundColor: 'whitesmoke' }}
-                                        onClick={() => navigate('/marcar-asistencia')}
-                                    >
-                                        {t('Marcar Asistencia')}
-                                    </Button>
-                                </Row>
-                            </>
-                        )}
-                        {currentUser?.tipo_acceso === 'profesor' && (
-                            <>
-                                <Row xs="auto" className="justify-content-center">
-                                    <Button
-                                        variant="light"
-                                        className="mb-3"
-                                        style={{ width: '50%', padding: '10px', color: 'black', backgroundColor: 'whitesmoke' }}
-                                        onClick={() => navigate('/obtener-qr')}
-                                    >
-                                        {t('obtenerQR')}
-                                    </Button>
-                                </Row>
-                                <Row xs="auto" className="justify-content-center">
-                                    <Button
-                                        variant="light"
-                                        style={{ width: '50%', padding: '10px', color: 'black', backgroundColor: 'whitesmoke' }}
-                                        onClick={() => navigate('/ver-asistencias')}
-                                    >
-                                        {t('verAsistencia')}
-                                    </Button>
-                                </Row>
-                            </>
-                        )}
-                        {currentUser?.tipo_acceso === 'admin' && (
-                            <>
-                                <Row xs="auto" className="justify-content-center">
-                                    <Button
-                                        variant="light"
-                                        className="mb-3"
-                                        style={{ width: '50%', padding: '10px', color: 'black', backgroundColor: 'whitesmoke' }}
-                                        onClick={() => navigate('/resolucion-justificaciones')}
-                                    >
-                                        {t('resolucionJustificaciones')}
-                                    </Button>
-                                </Row>
-                                <Row xs="auto" className="justify-content-center">
-                                    <Button
-                                        variant="light"
-                                        style={{ width: '50%', padding: '10px', color: 'black', backgroundColor: 'whitesmoke' }}
-                                        onClick={() => navigate('/Ver-Estadisticas')}
-                                    >
-                                        {t('VerEstadisticas')}
-                                    </Button>
-                                </Row>
-                            </>
-                        )}
-                    </Row>
-                </Container>
-            </div>
-            <Col>
-                <Container>
-                    {/* Additional content can go here */}
-                </Container>
-            </Col>
+        <div
+            style={{
+                backgroundImage: `url(${ImgFondo})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center top',
+                height: '100vh',
+                textAlign: 'center',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+            }}
+        >
+            <Container>
+                <Row className="justify-content-center">
+                    {currentUser?.tipo_acceso === 'alumno' && (
+                        <>
+                            <Row xs="auto" className="justify-content-center mb-3">
+                                <Button
+                                    variant="light"
+                                    style={{ width: '50%', padding: '10px', color: 'black', backgroundColor: 'whitesmoke' }}
+                                    onClick={() => navigate('/justificaciones')}
+                                >
+                                    {t('enviar-justificaciones')}
+                                </Button>
+                            </Row>
+                            <Row xs="auto" className="justify-content-center mb-3">
+                                <Button
+                                    variant="light"
+                                    style={{ width: '50%', padding: '10px', color: 'black', backgroundColor: 'whitesmoke' }}
+                                    onClick={() => navigate('/proximos-cursos')}
+                                >
+                                    {t('ver-proximosCursos')}
+                                </Button>
+                            </Row>
+                            <Row xs="auto" className="justify-content-center mb-3">
+                                <Button
+                                    variant="light"
+                                    style={{ width: '50%', padding: '10px', color: 'black', backgroundColor: 'whitesmoke' }}
+                                    onClick={() => navigate('/asistencias')}
+                                >
+                                    {t('ver-asistencias')}
+                                </Button>
+                            </Row>
+                            <Row xs="auto" className="justify-content-center">
+                                <Button
+                                    variant="light"
+                                    style={{ width: '50%', padding: '10px', color: 'black', backgroundColor: 'whitesmoke' }}
+                                    onClick={() => navigate('/marcar-asistencia')}
+                                >
+                                    {t('registrar-asistencia')}
+                                </Button>
+                            </Row>
+                        </>
+                    )}
+                    {currentUser?.tipo_acceso === 'profesor' && (
+                        <>
+                            <Row xs="auto" className="justify-content-center mb-3">
+                                <Button
+                                    variant="light"
+                                    style={{ width: '50%', padding: '10px', color: 'black', backgroundColor: 'whitesmoke' }}
+                                    onClick={() => navigate('/obtener-qr')}
+                                >
+                                    {t('obtenerQR')}
+                                </Button>
+                            </Row>
+                            <Row xs="auto" className="justify-content-center">
+                                <Button
+                                    variant="light"
+                                    style={{ width: '50%', padding: '10px', color: 'black', backgroundColor: 'whitesmoke' }}
+                                    onClick={() => navigate('/ver-asistencias')}
+                                >
+                                    {t('verAsistencia')}
+                                </Button>
+                            </Row>
+                        </>
+                    )}
+                    {currentUser?.tipo_acceso === 'admin' && (
+                        <>
+                            <Row xs="auto" className="justify-content-center mb-3">
+                                <Button
+                                    variant="light"
+                                    style={{ width: '50%', padding: '10px', color: 'black', backgroundColor: 'whitesmoke' }}
+                                    onClick={() => navigate('/resolucion-justificaciones')}
+                                >
+                                    {t('resolucionJustificaciones')}
+                                </Button>
+                            </Row>
+                            <Row xs="auto" className="justify-content-center">
+                                <Button
+                                    variant="light"
+                                    style={{ width: '50%', padding: '10px', color: 'black', backgroundColor: 'whitesmoke' }}
+                                    onClick={() => navigate('/Ver-Estadisticas')}
+                                >
+                                    {t('VerEstadisticas')}
+                                </Button>
+                            </Row>
+                        </>
+                    )}
+                </Row>
+            </Container>
         </div>
     );
 }

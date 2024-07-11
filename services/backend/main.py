@@ -17,8 +17,8 @@ import bcrypt
 import jwt
 import os
 import time
-
-
+import logging
+import uuid
 import json
 
 from sqlalchemy.exc import SQLAlchemyError
@@ -35,6 +35,10 @@ app.config.from_object(DevelopmentConfig)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'clave_secreta_por_defecto') ##probando
 # Configuración de CORS
 CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
+logging.basicConfig(level=logging.ERROR)
+
+
+
 
 # Set UPLOAD_FOLDER from environment variable or use default
 UPLOAD_FOLDER = os.getenv('UPLOAD_FOLDER', '/app/uploads')
@@ -699,29 +703,19 @@ def store_validation_data():
     try:
         data = request.get_json()
         logging.info(f"Received data: {data}")
+        course = data['course']
+        date_str = data['date'].replace('Z', '')  # Eliminar el sufijo 'Z'
+        date = datetime.fromisoformat(date_str).date()  # Convertir a fecha
+        qr_url = data['qr_url']
 
-        course = data.get('course')
-        date = data.get('date')
-        qr_url = data.get('qr_url')
-
-        if not all([course, date, qr_url]):
-            logging.error("Course, date, and QR URL are required")
-            return jsonify({'error': 'Course, date, and QR URL are required'}), 400
-
-        date = datetime.fromisoformat(date)
-        new_data = ValidationData(course=course, date=date, qr_url=qr_url)
-        db.session.add(new_data)
+        new_validation_data = ValidationData(course=course, date=date, qr_url=qr_url)
+        db.session.add(new_validation_data)
         db.session.commit()
-
-        logging.info(f"Data stored successfully: {new_data.to_json()}")
-        return jsonify(new_data.to_json()), 201
-
+        
+        return jsonify(new_validation_data.to_json()), 201
     except Exception as e:
         logging.error(f"Error storing data: {e}")
-        return jsonify({'error': 'Internal Server Error'}), 500
-
-
-
+        return jsonify({'error': str(e)}), 500
 
 
 @app.route('/api/verify_link', methods=['POST'])
@@ -738,10 +732,10 @@ def verify_link():
     date = datetime.fromisoformat(date)
 
     # Buscar un registro que coincida con el curso, link y la fecha (solo la parte de la fecha, ignorando el tiempo)
-    validation_link = ValidationLink.query.filter(
-        ValidationLink.course == course,
-        ValidationLink.link == link,
-        db.func.date(ValidationLink.date) == date.date()
+    validation_link = ValidationData.query.filter(
+        ValidationData.course == course,
+        ValidationData.link == link,
+        db.func.date(ValidationData.date) == date.date()
     ).first()
 
     if validation_link:

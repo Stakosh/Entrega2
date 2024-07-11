@@ -182,7 +182,7 @@ class Attendance(db.Model):
 class ValidationData(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     course = db.Column(db.String(100), nullable=False)
-    date = db.Column(db.DateTime, nullable=False)
+    date = db.Column(db.Date, nullable=False)  # Cambiado a db.Date
     qr_url = db.Column(db.String(500), nullable=False)
 
     def to_json(self):
