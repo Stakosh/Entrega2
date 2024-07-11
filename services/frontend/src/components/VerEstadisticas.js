@@ -22,7 +22,7 @@ function VerEstadisticas() {
 
     if (!statistics) {
         return (
-            <Container style={{ backgroundImage: `url(${ImgFondo})`, backgroundSize: 'cover' ,display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+            <Container style={{ backgroundImage: `url(${ImgFondo})`, backgroundSize: 'cover', display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
                 <Spinner animation="border" role="status">
                     <span className="visually-hidden">{t('loading')}</span>
                 </Spinner>
@@ -75,6 +75,23 @@ function VerEstadisticas() {
         }]
     };
 
+    const dietaryRestrictionsData = {
+        labels: ['Vegano', 'Celiaco', 'Diabetico Tipo 1', 'Diabetico Tipo 2', 'Alergico', 'Vegetariano', 'Intolerante a la Lactosa', 'Otra'],
+        datasets: [{
+            data: [
+                statistics.dietary_restrictions.vegano || 0,
+                statistics.dietary_restrictions.celiaco || 0,
+                statistics.dietary_restrictions.diabetico_tipo1 || 0,
+                statistics.dietary_restrictions.diabetico_tipo2 || 0,
+                statistics.dietary_restrictions.alergico || 0,
+                statistics.dietary_restrictions.vegetariano || 0,
+                statistics.dietary_restrictions.intolerante_lactosa || 0,
+                statistics.dietary_restrictions.otra || 0
+            ],
+            backgroundColor: '#36A2EB'
+        }]
+    };
+
     return (
         <Container style={{ backgroundImage: `url(${ImgFondo})`, backgroundSize: 'cover', backgroundPosition: 'center', minHeight: '100vh', overflowY: 'auto' }}>
             <Row className="justify-content-center align-items-center" style={{ minHeight: '100vh' }}>
@@ -100,6 +117,12 @@ function VerEstadisticas() {
                     <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', textAlign: 'center' }}>
                         <h3 className="text-center mb-4">{t('justificaciones')}</h3>
                         <Pie data={justificacionesData} />
+                    </div>
+                </Col>
+                <Col md={12}>
+                    <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', textAlign: 'center' }}>
+                        <h3 className="text-center mb-4">{t('dietaryRestrictions')}</h3>
+                        <Bar data={dietaryRestrictionsData} />
                     </div>
                 </Col>
             </Row>

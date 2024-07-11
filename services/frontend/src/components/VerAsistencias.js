@@ -106,7 +106,7 @@ function VerAsistencias() {
                 <Row className="justify-content-center align-items-center">
                     <Col md={8} lg={6} xl={10}>
                         <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', textAlign: 'center' }}>
-                            <h2 className="text-center mb-4">{t('attendance')}</h2>
+                            <h2 className="text-center mb-4">{t('total-attendance')}</h2>
                             <Form.Group>
                                 <Form.Label>{t('selectCourse')}</Form.Label>
                                 <Form.Control as="select" value={selectedCurso} onChange={handleCourseChange}>
@@ -119,7 +119,7 @@ function VerAsistencias() {
                                 </Form.Control>
                             </Form.Group>
                             {selectedCurso && (
-                                <div className="mt-4">
+                                <div className="mt-4" style={{ width: '60%', margin: '0 auto' }}>
                                     <Pie data={getAttendanceData()} />
                                 </div>
                             )}

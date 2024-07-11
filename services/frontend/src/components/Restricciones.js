@@ -11,7 +11,6 @@ function Restricciones({ onSubmit }) {
         diabetico_tipo2: false,
         alergico: false,
         vegetariano: false,
-        intolerante_lactosa: false,
         otra: ''
     });
 //['vegano', 'celiaco', 'diabetico_tipo1', 'diabetico_tipo2', 'alergico', 'vegetariano', 'intolerante-lactosa']:

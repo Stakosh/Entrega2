@@ -10,7 +10,7 @@ from parse_courses import (parse_courses_file, initialize_courses_and_careers,
                            parse_schedules_file, initialize_schedules, 
                            create_students_from_credencial, assign_courses_to_students, 
                            initialize_default_users,assign_attendance_to_students,
-                           assign_class_attendance_to_students)
+                           assign_class_attendance_to_students,create_fake_students_and_data)
 from extensions import db
 from models import *
 import bcrypt
@@ -863,37 +863,70 @@ def rechazar_justificacion(id):
 
 @app.route('/api/statistics', methods=['GET'])
 def get_statistics():
-    # Encuesta Alimentaria
-    encuesta_alimentaria_data = db.session.query(
-        Student.EncuestaAlimentaria,
-        func.count(Student.EncuestaAlimentaria)
-    ).group_by(Student.EncuestaAlimentaria).all()
-    
-    # Asistencia
-    attendance_data = db.session.query(
-        Attendance.status,
-        func.count(Attendance.status)
-    ).group_by(Attendance.status).all()
-    
-    # Modalidad de Asistencia
-    modalidad_data = db.session.query(
-        ClassAttendance.modalidad,
-        func.count(ClassAttendance.modalidad)
-    ).group_by(ClassAttendance.modalidad).all()
-    
-    # Justificaciones
-    justificaciones_data = db.session.query(
-        Justificacion.status,
-        func.count(Justificacion.status)
-    ).group_by(Justificacion.status).all()
+    try:
+        # Encuesta Alimentaria
+        print("Fetching encuesta alimentaria data...")
+        encuesta_alimentaria_data = db.session.query(
+            Student.EncuestaAlimentaria,
+            func.count(Student.EncuestaAlimentaria)
+        ).group_by(Student.EncuestaAlimentaria).all()
+        print("Encuesta alimentaria data fetched:", encuesta_alimentaria_data)
 
-    return jsonify({
-        'encuesta_alimentaria': dict(encuesta_alimentaria_data),
-        'attendance': dict(attendance_data),
-        'modalidad': dict(modalidad_data),
-        'justificaciones': dict(justificaciones_data)
-    })
+        # Asistencia
+        print("Fetching attendance data...")
+        attendance_data = db.session.query(
+            Attendance.status,
+            func.count(Attendance.status)
+        ).group_by(Attendance.status).all()
+        print("Attendance data fetched:", attendance_data)
 
+        # Modalidad de Asistencia
+        print("Fetching modalidad data...")
+        modalidad_data = db.session.query(
+            ClassAttendance.modalidad,
+            func.count(ClassAttendance.modalidad)
+        ).group_by(ClassAttendance.modalidad).all()
+        print("Modalidad data fetched:", modalidad_data)
+
+        # Justificaciones
+        print("Fetching justificaciones data...")
+        justificaciones_data = db.session.query(
+            Justificacion.status,
+            func.count(Justificacion.status)
+        ).group_by(Justificacion.status).all()
+        print("Justificaciones data fetched:", justificaciones_data)
+
+        # Restricciones Dietéticas
+        print("Fetching dietary restrictions data...")
+        dietary_restrictions_data = db.session.query(
+            func.sum(func.cast(DietaryPreference.vegano, db.Integer)),
+            func.sum(func.cast(DietaryPreference.celiaco, db.Integer)),
+            func.sum(func.cast(DietaryPreference.diabetico_tipo1, db.Integer)),
+            func.sum(func.cast(DietaryPreference.diabetico_tipo2, db.Integer)),
+            func.sum(func.cast(DietaryPreference.alergico, db.Integer)),
+            func.sum(func.cast(DietaryPreference.vegetariano, db.Integer)),
+            func.count(DietaryPreference.otra)  # Contar todos los que tienen 'otra' no nulo
+        ).one()
+        print("Dietary restrictions data fetched:", dietary_restrictions_data)
+
+        return jsonify({
+            'encuesta_alimentaria': dict(encuesta_alimentaria_data),
+            'attendance': dict(attendance_data),
+            'modalidad': dict(modalidad_data),
+            'justificaciones': dict(justificaciones_data),
+            'dietary_restrictions': {
+                'vegano': dietary_restrictions_data[0] or 0,
+                'celiaco': dietary_restrictions_data[1] or 0,
+                'diabetico_tipo1': dietary_restrictions_data[2] or 0,
+                'diabetico_tipo2': dietary_restrictions_data[3] or 0,
+                'alergico': dietary_restrictions_data[4] or 0,
+                'vegetariano': dietary_restrictions_data[5] or 0,
+                'otra': dietary_restrictions_data[6] or 0
+            }
+        })
+    except Exception as e:
+        print("Error in get_statistics:", str(e))
+        return jsonify({'error': str(e)}), 500
 
 
 
@@ -945,6 +978,7 @@ with app.app_context():
     assign_courses_to_students()
     assign_attendance_to_students()
     assign_class_attendance_to_students()
+    create_fake_students_and_data()
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0')
